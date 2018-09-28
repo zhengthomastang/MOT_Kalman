@@ -26,7 +26,7 @@ This package is designed for generating 2D tracklets in each single camera. A 2D
    2. Click on the image around the ROI. A blue circle stands for each click and a white line connects two adjacent clicks. Note that in order to make a valid ROI, the last click should be close to the first click, i.e., two blue circles should overlap.
    3. After the selection of ROI is done, click `o`. A binary mask image that shows the mask for ROI is created. 
    4. During ROI selection, if mis-clicking on wrong places, the user can press `r`. All the markers will be cleared, and s/he can start over.
-4. The user can choose to plot tracking results (as colorful bounding boxes for different IDs) at the output window by setting “pltTrkResFlg”. The past trajectories of foot points can also be plotted when `pltTrajTmSec` is larger than zero. To improve the continuity of tracklets, each object is tracked by prediction of Kalman filter for several frames even when the detection is missing. This may lead to some false positives. The balance is controlled by `trkHypTmSecThld`. 
+4. The user can choose to plot tracking results (as colorful bounding boxes for different IDs) at the output window by setting `pltTrkResFlg`. The past trajectories of foot points can also be plotted when `pltTrajTmSec` is larger than zero. To improve the continuity of tracklets, each object is tracked by prediction of Kalman filter for several frames even when the detection is missing. This may lead to some false positives. The balance is controlled by `trkHypTmSecThld`. 
 
 ## Disclaimer
 For any question you can contact [Zheng (Thomas) Tang](https://github.com/zhengthomastang).
