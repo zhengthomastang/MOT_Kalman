@@ -42,6 +42,7 @@ public:
 	inline bool getSelRoiFlg(void) { return m_bSelRoiFlg; }
 	inline bool getPltTrkResFlg(void) { return m_bPltTrkResFlg; }
 	inline bool getPltDetFlg(void) { return m_bPltDetFlg; }
+	inline bool getBs1StFrmCntFlg(void) { return m_bBs1StFrmCntFlg; }
 	inline int getProcStFrmCnt(void) { return m_nProcStFrmCnt; }
 	inline int getProcFrmNum(void) { return m_nProcFrmNum; }
 	inline double getOvrdFrmRt(void) { return m_fOvrdFrmRt; }
@@ -111,6 +112,8 @@ private:
 	bool m_bPltTrkResFlg;
 	//! flag of plotting object detection
 	bool m_bPltDetFlg;
+	//! flag of 1-based (starting) frame count
+	bool m_bBs1StFrmCntFlg;
 	//! starting frame count to process
 	int m_nProcStFrmCnt;
 	//! number of frames to process (-1: till the end of the video source)

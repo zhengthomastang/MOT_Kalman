@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[])
 {
-	int nFrmCnt = 0, nProcFrmNum = 0;
+	int nFrmCnt, nProcFrmNum = 0;
 	cv::VideoCapture oVdoCap;
 	cv::VideoWriter oVdoWrt;
 	cv::Mat oImgFrm, oImgRoi, oImgBg;
@@ -24,6 +24,11 @@ int main(int argc, char *argv[])
 	CObjTrk oObjTrk;
 	CCfg oCfg;
 	oCfg.loadCfgFile();
+
+	if (oCfg.getBs1StFrmCntFlg())
+		nFrmCnt = 1;
+	else
+		nFrmCnt = 0;
 
 	cv::namedWindow("current frame", CV_WINDOW_NORMAL);
 
@@ -180,7 +185,10 @@ int main(int argc, char *argv[])
 		oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
 
 	// set starting frame count
-	nFrmCnt = 0;
+	if (oCfg.getBs1StFrmCntFlg())
+		nFrmCnt = 1;
+	else
+		nFrmCnt = 0;
 
 	// regular tracking
 	cv::namedWindow("current frame", CV_WINDOW_NORMAL);

@@ -558,7 +558,7 @@ void CObjTrk::mtchTrkCand(CTrkNd& oTrkNd, cv::Rect2f oPredBBox, cv::Point2f oPre
 				cv::Size oFrmSz = m_oCfg.getFrmSz();
 				fDistWgtStpSz = (((m_oCfg.getFrmSz().height - m_voCurrCandNd[i].get2dFtPt().y) / (m_oCfg.getFrmSz().height * DIST_WGT_2D_DEP_STP_SZ)) * DIST_WGT_DEP_INC) + 1.0f;
 
-                if (10.0f <= m_oCfg.getFrmRt())
+                if (5.0f <= m_oCfg.getFrmRt())
                     fMtchScr = fDistWgtStpSz * calcBBoxIou(oPredBBox, m_voCurrCandNd[i].getBBox());
                 else
 					fMtchScr = fDistWgtStpSz / cv::norm(oPred2dFtPt - m_voCurrCandNd[i].get2dFtPt());
@@ -572,7 +572,7 @@ void CObjTrk::mtchTrkCand(CTrkNd& oTrkNd, cv::Rect2f oPredBBox, cv::Point2f oPre
 		}
 
 		// matched with a candidate node
-		if ((10.0f <= m_oCfg.getFrmRt()) ? (MTCH_ND_IOU_THLD < fMaxMtchScr) :
+		if ((5.0f <= m_oCfg.getFrmRt()) ? (MTCH_ND_IOU_THLD < fMaxMtchScr) :
 			((1.0f / m_oCfg.getTrkDistThld()) < fMaxMtchScr))
 		{
 			oTrkNd.setMtchCandFlg(true);

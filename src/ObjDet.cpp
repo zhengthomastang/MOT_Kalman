@@ -102,9 +102,9 @@ void CObjDet::rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 
 		// read from the input txt file
 		m_ifsInDetTxt.getline(acInDetBuf, 256);
-		std::sscanf(acInDetBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f,%s", &nDetFrmCnt, &nDetId,
+		std::sscanf(acInDetBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nDetFrmCnt, &nDetId,
 			&oDetBBox.x, &oDetBBox.y, &oDetBBox.width, &oDetBBox.height,
-			&fDetScr, &oDet3dCoord.x, &oDet3dCoord.y, &oDet3dCoord.z, acDetCls);
+			&fDetScr, &oDet3dCoord.x, &oDet3dCoord.y, &oDet3dCoord.z);
 
 		if (nDetFrmCnt >= nFrmCnt)
 		{

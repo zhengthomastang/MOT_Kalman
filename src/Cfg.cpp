@@ -31,6 +31,7 @@ CCfg::CCfg()
 	m_bSelRoiFlg = false;
 	m_bPltTrkResFlg = true;
 	m_bPltDetFlg = false;
+	m_bBs1StFrmCntFlg = false;
 	m_nProcStFrmCnt = 0;
 	m_nProcFrmNum = -1;
 	m_fOvrdFrmRt = 10.0f;
@@ -147,6 +148,10 @@ void CCfg::loadCfgFile()
 	nParamPos = strCfg.find("\"pltDetFlg\"");
 	if (nParamPos != std::string::npos)
 		m_bPltDetFlg = readBool(strCfg, nParamPos);
+
+	nParamPos = strCfg.find("\"bs1StFrmCntFlg\"");
+	if (nParamPos != std::string::npos)
+		m_bBs1StFrmCntFlg = readBool(strCfg, nParamPos);
 
 	nParamPos = strCfg.find("\"procStFrmCnt\"");
 	if (nParamPos != std::string::npos)
