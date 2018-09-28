@@ -1,6 +1,6 @@
 # SCT_Kalman
 
-This repository contains our source code of C++ implementation of 2D single-camera tracking based on Kalman filtering.
+This repository contains our C++ implementation of 2D single-camera tracking based on Kalman filtering. It is useful for efficient tracklet generation in data association. 
 
 ## Introduction
 
