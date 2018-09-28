@@ -1,6 +1,6 @@
-# SCT_Kalman
+# MOT_Kalman
 
-This repository contains our C++ implementation of 2D single-camera tracking based on Kalman filtering. It is useful for efficient tracklet generation in data association. 
+This repository contains our C++ implementation of (intra-camera) online multiple object tracking based on Kalman filtering. It is useful for efficient tracklet generation in data association. 
 
 ## Introduction
 
