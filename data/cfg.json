@@ -51,7 +51,7 @@
     "pltTrajTmSec": 2.0,
     // resized video frame height (-1: original size)
     "rszFrmHei": -1
-  }
+  },
   // object tracking
   "objTrk": {
     // threshold of detection score (in percentage)
