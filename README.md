@@ -16,7 +16,8 @@ This package is designed for generating 2D tracklets in each single camera. A 2D
 
 ## How to Build
 1. Download and make the OpenCV library.
-2. Compile using g++ in Linux environment. 
+2. Compile using g++ in Linux environment. If you are new to g++ compilation with OpenCV, please refer to this [link](http://answers.opencv.org/question/25642/how-to-compile-basic-opencv-program-in-c-in-ubuntu/). In command window, you can `cd` to the directory of `./src/` and use the following command to compile our source code, where `../bin` is the executable file generated.  
+```g++ -I/usr/local/include/ -L/usr/local/lib/ -g -o ../bin main.cpp Cfg.cpp RoiSel.cpp ObjDet.cpp ObjTrk.cpp -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs -lopencv_videoio -lopencv_video -lm```
 
 ## How to Use
 1. Set the corresponding input/output paths in the configuration file if necessary. 
