@@ -794,7 +794,7 @@ void CObjTrk::outTxtKitti(void)
 
 	for (std::vector<CTrkNd>::iterator it = m_voCurrTrkNd.begin(); it != m_voCurrTrkNd.end(); ++it)
 	{
-		std::fprintf(pfOutTrkTxt, "%s 0.0 0 0.0 %f %f %f %f 0.0 0.0 0.0 0.0 0.0 0.0 0.0", it->getDetCls(),
+		std::fprintf(pfOutTrkTxt, "%s 0.0 0 0.0 %f %f %f %f 0.0 0.0 0.0 0.0 0.0 0.0 0.0\n", it->getDetCls(),
                it->getBBox().x, it->getBBox().y, (it->getBBox().x + it->getBBox().width - 1), (it->getBBox().y + it->getBBox().height - 1));
 	}
 
