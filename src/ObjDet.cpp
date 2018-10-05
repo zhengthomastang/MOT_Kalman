@@ -137,6 +137,9 @@ void CObjDet::rdObjDetKitti(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 	std::sprintf(acInDetTxtPth, m_acInDetFlrPth);
 	std::strcat(acInDetTxtPth, acInDetTxtNm);
 
+	FILE * poInDetTxt = std::fopen(acInDetTxtPth, "r");
+        if (poInDetTxt == NULL) { std::fputs("Error: input KITTI detection results not exist", stderr); exit(1); }
+	
 	m_ifsInDetTxt.open(acInDetTxtPth);
 
 	char acInDetBuf[256] = { 0 };
@@ -202,7 +205,7 @@ void CObjDet::rmvOutBBox(std::vector<CDetNd>& voDetNd)
 	std::vector<int> viOutDetNd;
 	std::vector<int>::iterator it;
 
-    // remove large bounding box(es) that contain other bounding box(es)
+        // remove large bounding box(es) that contain other bounding box(es)
 	for (int i = voDetNd.size() - 1; i >= 0; i--)
 	{
 		for (int j = i - 1; j >= 0; j--)
