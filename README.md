@@ -31,12 +31,12 @@ This package is designed for generating 2D tracklets in each single camera. A 2D
 </div>
 
    3. After the selection of ROI is done, click `o`. A binary mask image that shows the mask for ROI is created. 
-   4. During ROI selection, if mis-clicking on wrong places, the user can press `r`. All the markers will be cleared, and s/he can start over.
 
 <div align="center">
     <img src="/pic/pic1.jpg", width="640">
 </div>
 
+   4. During ROI selection, if mis-clicking on wrong places, the user can press `r`. All the markers will be cleared, and s/he can start over.
 4. The user can choose to plot tracking results (as colorful bounding boxes for different IDs) at the output window by setting `pltTrkResFlg` to 1. The past trajectories of foot points can also be plotted when `pltTrajTmSec` is larger than zero. 
 
 <div align="center">
