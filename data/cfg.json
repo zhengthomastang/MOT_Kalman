@@ -37,8 +37,6 @@
     "pltTrkResFlg": 1,
     // flag of plotting object detection
     "pltDetFlg": 0,
-    // flag of 1-based (starting) frame count
-    "bs1StFrmCntFlg": 1,
     //! starting frame count to process
     "procStFrmCnt": 1,
     //! number of frames to process (-1: till the end of the video source)
