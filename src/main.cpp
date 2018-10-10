@@ -25,10 +25,7 @@ int main(int argc, char *argv[])
 	CCfg oCfg;
 	oCfg.loadCfgFile();
 
-	if (oCfg.getBs1StFrmCntFlg())
-		nFrmCnt = 1;
-	else
-		nFrmCnt = 0;
+	nFrmCnt = oCfg.getProcStFrmCnt();
 
 	cv::namedWindow("current frame", CV_WINDOW_NORMAL);
 
@@ -185,10 +182,7 @@ int main(int argc, char *argv[])
 		oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
 
 	// set starting frame count
-	if (oCfg.getBs1StFrmCntFlg())
-		nFrmCnt = 1;
-	else
-		nFrmCnt = 0;
+	nFrmCnt = oCfg.getProcStFrmCnt();
 
 	// regular tracking
 	cv::namedWindow("current frame", CV_WINDOW_NORMAL);
