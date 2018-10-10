@@ -42,16 +42,15 @@ public:
 	inline bool getSelRoiFlg(void) { return m_bSelRoiFlg; }
 	inline bool getPltTrkResFlg(void) { return m_bPltTrkResFlg; }
 	inline bool getPltDetFlg(void) { return m_bPltDetFlg; }
-	inline bool getBs1StFrmCntFlg(void) { return m_bBs1StFrmCntFlg; }
 	inline int getProcStFrmCnt(void) { return m_nProcStFrmCnt; }
 	inline int getProcFrmNum(void) { return m_nProcFrmNum; }
 	inline double getOvrdFrmRt(void) { return m_fOvrdFrmRt; }
-    inline bool getPltIdFlg(void) { return m_bPltIdFlg; }
+        inline bool getPltIdFlg(void) { return m_bPltIdFlg; }
 	inline float getPltTrajTmSec(void) { return m_fPltTrajTmSec; }
 	inline int getPltTrajFrmNum(void) { return m_fPltTrajTmSec * m_fFrmRt; }
 	inline int getRszFrmHei(void) { return m_nRszFrmHei; }
 	inline float getDetScrThld(void) { return m_fDetScrThld; }
-    inline float getTrkDistRatThld(void) { return m_fTrkDistRatThld; }
+        inline float getTrkDistRatThld(void) { return m_fTrkDistRatThld; }
 	inline int getTrkDistThld(void) { return m_fTrkDistRatThld * (m_oFrmSz.width + m_oFrmSz.height) / 2; }
 	inline float getTrkNtrTmSecThld(void) { return m_fTrkNtrTmSecThld; }
 	inline int getTrkNtrFrmNumThld(void) { return m_fTrkNtrTmSecThld * m_fFrmRt; }
@@ -112,24 +111,22 @@ private:
 	bool m_bPltTrkResFlg;
 	//! flag of plotting object detection
 	bool m_bPltDetFlg;
-	//! flag of 1-based (starting) frame count
-	bool m_bBs1StFrmCntFlg;
 	//! starting frame count to process
 	int m_nProcStFrmCnt;
 	//! number of frames to process (-1: till the end of the video source)
 	int m_nProcFrmNum;
 	//! overriden frame rate, necessary when m_nInVdoTyp == 1
 	double m_fOvrdFrmRt;
-    //! flag of plotting the number of object identity, necessary when m_bPltTrkResFlg == true
-    bool m_bPltIdFlg;
+        //! flag of plotting the number of object identity, necessary when m_bPltTrkResFlg == true
+        bool m_bPltIdFlg;
 	//! time window in seconds for plotting previous trajectory, necessary when m_bPltTrkResFlg == true
 	float m_fPltTrajTmSec;
 	//! resized video frame height (-1: original size)
 	int m_nRszFrmHei;
 	//! threshold of detection score (in percentage)
 	float m_fDetScrThld;
-    //! threshold for distance in terms of ratio of frame size to determine nearby object nodes
-    float m_fTrkDistRatThld;
+        //! threshold for distance in terms of ratio of frame size to determine nearby object nodes
+        float m_fTrkDistRatThld;
 	//! threshold of existing time in seconds for entering objects
 	float m_fTrkNtrTmSecThld;
 	//! threshold of time in seconds that the objects are tracked as hypotheses (by prediction)
