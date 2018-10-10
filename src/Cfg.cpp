@@ -31,7 +31,6 @@ CCfg::CCfg()
 	m_bSelRoiFlg = false;
 	m_bPltTrkResFlg = true;
 	m_bPltDetFlg = false;
-	m_bBs1StFrmCntFlg = false;
 	m_nProcStFrmCnt = 0;
 	m_nProcFrmNum = -1;
 	m_fOvrdFrmRt = 10.0f;
@@ -39,7 +38,7 @@ CCfg::CCfg()
 	m_fPltTrajTmSec = 2.0f;
 	m_nRszFrmHei = -1;
 	m_fDetScrThld = 30.0f;
-    m_fTrkDistRatThld = 0.1f;
+        m_fTrkDistRatThld = 0.1f;
 	m_fTrkNtrTmSecThld = 0.1f;
 	m_fTrkHypTmSecThld = 0.5f;
 	m_fTrkTrajTmSecThld = 3.0f;
@@ -75,7 +74,7 @@ void CCfg::loadCfgFile()
 
 	std::string strCfg(pcBuf);
 	//strCfg.erase(std::remove_if(strCfg.begin(), strCfg.end(), [](char c) { return c >= 0 && isspace(c); }), strCfg.end());	// in Windows
-    strCfg.erase(std::remove_if(strCfg.begin(), strCfg.end(), ::isspace), strCfg.end());	// in Linux
+        strCfg.erase(std::remove_if(strCfg.begin(), strCfg.end(), ::isspace), strCfg.end());	// in Linux
 
 	int nParamPos = strCfg.find("\"inVdoPth\"");
 	if (nParamPos != std::string::npos)
@@ -149,10 +148,6 @@ void CCfg::loadCfgFile()
 	if (nParamPos != std::string::npos)
 		m_bPltDetFlg = readBool(strCfg, nParamPos);
 
-	nParamPos = strCfg.find("\"bs1StFrmCntFlg\"");
-	if (nParamPos != std::string::npos)
-		m_bBs1StFrmCntFlg = readBool(strCfg, nParamPos);
-
 	nParamPos = strCfg.find("\"procStFrmCnt\"");
 	if (nParamPos != std::string::npos)
 		m_nProcStFrmCnt = readInt(strCfg, nParamPos);
@@ -181,7 +176,7 @@ void CCfg::loadCfgFile()
 	if (nParamPos != std::string::npos)
 		m_fDetScrThld = readFlt(strCfg, nParamPos);
 
-    nParamPos = strCfg.find("\"trkDistRatThld\"");
+        nParamPos = strCfg.find("\"trkDistRatThld\"");
 	if (nParamPos != std::string::npos)
 		m_fTrkDistRatThld = readFlt(strCfg, nParamPos);
 
