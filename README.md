@@ -36,16 +36,16 @@ This package is designed for generating 2D tracklets in each single camera. A 2D
 </div>
 
    4. During ROI selection, if mis-clicking on wrong places, the user can press `r`. All the markers will be cleared, and s/he can start over.
-3. The user can choose to output plotted tracking results (as colored bounding boxes for different IDs) by setting `outImgFlg` to 1. As a reminder, the input video source is required for plotting tracking results. 
+3. The user can choose to output plotted tracking results (as colored bounding boxes for different IDs) by setting `outVdoTyp` to 1 or 2. As a reminder, the input video source is required for plotting tracking results. 
 
 <div align="center">
     <img src="/pic/pic2.jpg", width="640">
 </div>
 
-4. To improve the continuity of tracklets, each object is tracked by prediction of Kalman filter for several frames even when the detection is missing. The predicted instances will be removed if no following tracklet is found. Here are some ways to fine-tune the performance: 
-   1. To reduce false positives (short-living objects), the user can increase `trkNtrTmSecThld`. The unit is second. 
-   2. To reduce false negatives (gaps in trajectories), the user can increase `trkHypTmSecThld`. The unit is second. 
-   3. To reduce identity switches, when the frame rate is smaller than 5 fps, the user can decrease `trkDistRatThld`. The unit is the inverse of the number of pixels. Otherwise the user has to increase the IOU thresholds defined in `ObjTrk.h`. The threshold for frame rate (5 fps) can be changed by modifying `SLO_FRM_RT_THLD` defined in `ObjTrk.h`.
+4. To improve the continuity of tracklets, each object is tracked by prediction of the Kalman filter for several frames even when the detection is missing. The predicted instances will be removed if no following tracklet is found. Here are some ways to fine-tune the performance: 
+   1. To reduce false positives (short-living objects), the user can increase `trkNtrTmSecThld` (unit: second). 
+   2. To reduce false negatives (gaps in trajectories), the user can increase `trkHypTmSecThld` (unit: second). 
+   3. To reduce identity switches, the user can increase `trkMtchScrThld` and/or `trkNtrScrThld`. Intuitively, two nodes/instances are matched when the matching score is higher than this threshold. When the frame rate is low, we use the inverse of the distance between their foot points as the indicator. Thus, the unit is the inverse of the number of pixels when the frame rate is smaller than `trkFrmRtThld` (unit: fps). Otherwise, the unit is based on IOU (intersection over union). 
    
 5. Finally, the algorithm assumes that both the object IDs and frame IDs are 1-based, which means they always start counting from 1. To change it to 0-based, the user needs to modify `ST_OBJ_ID` and `ST_FRM_CNT` defined in `ObjTrk.h` before compiling.
 
