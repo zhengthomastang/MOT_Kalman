@@ -29,10 +29,11 @@ public:
 	inline char* getOutTrkTxtPth(void) { return m_acOutTrkTxtPth; }
 	inline char* getOutTrkFlrPth(void) { return m_acOutTrkFlrPth; }
 	inline char* getOutImgFlrPth(void) { return m_acOutImgFlrPth; }
+	inline char* getOutVdoPth(void) { return m_acOutVdoPth; }
 	inline int getInVdoTyp(void) { return m_nInVdoTyp; }
 	inline int getInDetTyp(void) { return m_nInDetTyp; }
 	inline int getOutTrkTyp(void) { return m_nOutTrkTyp; }
-	inline bool getOutImgFlg(void) { return m_bOutImgFlg; }
+	inline int getOutVdoTyp(void) { return m_nOutVdoTyp; }
 	inline bool getSelRoiFlg(void) { return m_bSelRoiFlg; }
 	inline int getProcStFrmCnt(void) { return m_nProcStFrmCnt; }
 	inline int getProcFrmNum(void) { return m_nProcFrmNum; }
@@ -41,12 +42,13 @@ public:
     inline bool getPltIdFlg(void) { return m_bPltIdFlg; }
 	inline int getRszFrmHei(void) { return m_nRszFrmHei; }
 	inline float getDetScrThld(void) { return m_fDetScrThld; }
-    inline float getTrkDistRatThld(void) { return m_fTrkDistRatThld; }
-	inline int getTrkDistThld(void) { return m_fTrkDistRatThld * (m_oFrmSz.width + m_oFrmSz.height) / 2; }
+    inline float getTrkFrmRtThld(void) { return m_fTrkFrmRtThld; }
+	inline float getTrkMtchScrThld(void) { return m_fTrkMtchScrThld; }
+	inline float getTrkNtrScrThld(void) { return m_fTrkNtrScrThld; }
 	inline float getTrkNtrTmSecThld(void) { return m_fTrkNtrTmSecThld; }
 	inline int getTrkNtrFrmNumThld(void) { return m_fTrkNtrTmSecThld * m_fFrmRt; }
-	inline float getTrkHypTmSecThld(void) { return m_fTrkHypTmSecThld; }
-	inline int getTrkHypFrmNumThld(void) { return m_fTrkHypTmSecThld * m_fFrmRt; }
+	inline float getTrkPredTmSecThld(void) { return m_fTrkPredTmSecThld; }
+	inline int getTrkPredFrmNumThld(void) { return m_fTrkPredTmSecThld * m_fFrmRt; }
 
 private:
 	//! reads char array
@@ -80,16 +82,18 @@ private:
 	char m_acOutTrkTxtPth[256];
 	//! path of output folder of tracking results, necessary when m_nOutTrkTyp == 1
 	char m_acOutTrkFlrPth[256];
-	//! path of folder for output image files, necessary when m_bOutImgFlg == true
+	//! path of folder for output plotted image files, necessary when m_nOutVdoTyp == 1
 	char m_acOutImgFlrPth[256];
-	//! type of input video source: 0: no video source; 1: image files; 2: video file (1 or 2 when m_bOutImgFlg == 1)
+	//! path of output plotted video file, necessary when m_nOutVdoTyp == 2
+	char m_acOutVdoPth[256];
+	//! type of input video source: 0: no video source; 1: image files; 2: video file
 	int m_nInVdoTyp;
 	//! type of input detection: 0: MOTChallenge format; 1: KITTI format
 	int m_nInDetTyp;
 	//! type of output tracking: 0: MOTChallenge format; 1: KITTI format
 	int m_nOutTrkTyp;
-	//! flag of output image files
-	bool m_bOutImgFlg;
+	//! type of output plotted video source: 0: no output; 1: image files; 2: video file
+	int m_nOutVdoTyp;
 	//! flag of selecting ROI image
 	bool m_bSelRoiFlg;
 	//! starting frame count to process
@@ -100,16 +104,20 @@ private:
     cv::Size m_oOvrdFrmSz;
 	//! overriden frame rate, necessary when m_nInVdoTyp == 0 or m_nInVdoTyp == 1
 	double m_fOvrdFrmRt;
-    //! flag of plotting the number of object identity, necessary when m_nOutTrkTyp == 0 and m_bOutImgFlg == true
+    //! flag of plotting the number of object identity, necessary when m_nOutTrkTyp == 0 and m_nOutVdoTyp == 1 or 2
     bool m_bPltIdFlg;
 	//! resized video frame height (-1: original size)
 	int m_nRszFrmHei;
 	//! threshold of detection score (in percentage)
 	float m_fDetScrThld;
-    //! threshold for distance in terms of ratio of frame size to determine nearby object nodes
-    float m_fTrkDistRatThld;
+	// threshold for frame rate: high: matched by IOU; low: matched by the inverse of pixel distance between foot points
+	float m_fTrkFrmRtThld;
+	// threshold for the matching score between a tracked node and a detected node
+	float m_fTrkMtchScrThld;
+	// threshold for the matching score for entering nodes
+	float m_fTrkNtrScrThld;
 	//! threshold of existing time in seconds for entering objects
 	float m_fTrkNtrTmSecThld;
-	//! threshold of time in seconds that the objects are tracked as hypotheses (by prediction)
-	float m_fTrkHypTmSecThld;
+	//! threshold of time in seconds that the objects are tracked by prediction
+	float m_fTrkPredTmSecThld;
 };

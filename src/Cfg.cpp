@@ -20,10 +20,12 @@ CCfg::CCfg()
 	std::strcpy(m_acOutTrkFlrPth, "./data/res/");	// in Linux
 	//std::strcpy(m_acOutImgFlrPth, ".\\data\\outImg1\\");	// in Windows
 	std::strcpy(m_acOutImgFlrPth, "./data/outImg1/");	// in Linux
+	//std::strcpy(m_acOutVdoPth, ".\\data\\outVdo.avi");	// in Windows
+	std::strcpy(m_acOutVdoPth, "./data/outVdo.avi");	// in Linux
 	m_nInVdoTyp = 0;
 	m_nInDetTyp = 0;
 	m_nOutTrkTyp = 0;
-	m_bOutImgFlg = false;
+	m_nOutVdoTyp = 0;
 	m_bSelRoiFlg = false;
 	m_nProcStFrmCnt = 0;
 	m_nProcFrmNum = -1;
@@ -32,9 +34,11 @@ CCfg::CCfg()
 	m_bPltIdFlg = true;
 	m_nRszFrmHei = -1;
 	m_fDetScrThld = 30.0f;
-    m_fTrkDistRatThld = 0.1f;
+    m_fTrkFrmRtThld = 5.0f;
+	m_fTrkMtchScrThld = 0.35f;
+	m_fTrkNtrScrThld = 0.25f;
 	m_fTrkNtrTmSecThld = 0.1f;
-	m_fTrkHypTmSecThld = 0.5f;
+	m_fTrkPredTmSecThld = 0.5f;
 }
 
 CCfg::~CCfg()
@@ -103,6 +107,10 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 	if (nParamPos != std::string::npos)
 		std::strcpy(m_acOutImgFlrPth, rdCharArr(strCfg, nParamPos).c_str());
 
+	nParamPos = strCfg.find("\"outVdoPth\"");
+	if (nParamPos != std::string::npos)
+		std::strcpy(m_acOutVdoPth, rdCharArr(strCfg, nParamPos).c_str());
+
 	nParamPos = strCfg.find("\"inVdoTyp\"");
 	if (nParamPos != std::string::npos)
 		m_nInVdoTyp = rdInt(strCfg, nParamPos);
@@ -115,9 +123,9 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 	if (nParamPos != std::string::npos)
 		m_nOutTrkTyp = rdInt(strCfg, nParamPos);
 
-	nParamPos = strCfg.find("\"outImgFlg\"");
+	nParamPos = strCfg.find("\"outVdoTyp\"");
 	if (nParamPos != std::string::npos)
-		m_bOutImgFlg = rdBool(strCfg, nParamPos);
+		m_nOutVdoTyp = rdInt(strCfg, nParamPos);
 
 	nParamPos = strCfg.find("\"selRoiFlg\"");
 	if (nParamPos != std::string::npos)
@@ -151,17 +159,25 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 	if (nParamPos != std::string::npos)
 		m_fDetScrThld = rdFlt(strCfg, nParamPos);
 
-    nParamPos = strCfg.find("\"trkDistRatThld\"");
+    nParamPos = strCfg.find("\"trkFrmRtThld\"");
 	if (nParamPos != std::string::npos)
-		m_fTrkDistRatThld = rdFlt(strCfg, nParamPos);
+		m_fTrkFrmRtThld = rdFlt(strCfg, nParamPos);
+
+	nParamPos = strCfg.find("\"trkMtchScrThld\"");
+	if (nParamPos != std::string::npos)
+		m_fTrkMtchScrThld = rdFlt(strCfg, nParamPos);
+
+	nParamPos = strCfg.find("\"trkNtrScrThld\"");
+	if (nParamPos != std::string::npos)
+		m_fTrkNtrScrThld = rdFlt(strCfg, nParamPos);
 
 	nParamPos = strCfg.find("\"trkNtrTmSecThld\"");
 	if (nParamPos != std::string::npos)
 		m_fTrkNtrTmSecThld = rdFlt(strCfg, nParamPos);
 
-	nParamPos = strCfg.find("\"trkHypTmSecThld\"");
+	nParamPos = strCfg.find("\"trkPredTmSecThld\"");
 	if (nParamPos != std::string::npos)
-		m_fTrkHypTmSecThld = rdFlt(strCfg, nParamPos);
+		m_fTrkPredTmSecThld = rdFlt(strCfg, nParamPos);
 
 	CV_Assert((0 == m_nInVdoTyp) || (1 == m_nInVdoTyp) || (2 == m_nInVdoTyp));
 	CV_Assert((0 == m_nInDetTyp) || (1 == m_nInDetTyp));
@@ -171,11 +187,13 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 	if (((0 == m_nInVdoTyp) || (1 == m_nInVdoTyp)))
 		CV_Assert(0 < m_fOvrdFrmRt);
 	CV_Assert(0 <= m_fDetScrThld);
-	if (m_bOutImgFlg)
+	if (((0 == m_nOutVdoTyp) || (1 == m_nOutVdoTyp)))
 		CV_Assert((1 == m_nInVdoTyp) || (2 == m_nInVdoTyp));
-	CV_Assert(0 <= m_fTrkDistRatThld);
+	CV_Assert(0 < m_fTrkFrmRtThld);
+	CV_Assert(0 < m_fTrkMtchScrThld);
+	CV_Assert(0 < m_fTrkNtrScrThld);
 	CV_Assert(0 <= m_fTrkNtrTmSecThld);
-	CV_Assert(0 <= m_fTrkHypTmSecThld);
+	CV_Assert(0 <= m_fTrkPredTmSecThld);
 
 	// terminate
 	fclose(poCfgFl);

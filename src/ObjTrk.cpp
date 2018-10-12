@@ -17,15 +17,15 @@ CTraj::CTraj(void)
 	std::vector<int>().swap(m_vnTrajFrmCnt);
 	std::vector<cv::Rect2f>().swap(m_voTrajBBox);
 	std::vector<cv::Point2f>().swap(m_voTraj2dFtPt);
-	std::vector<bool>().swap(m_vbTrajHypFlg);
+	std::vector<bool>().swap(m_vbTrajPredFlg);
 }
 
-CTraj::CTraj(std::vector<int> vnFrmCnt, std::vector<cv::Rect2f> voBBox, std::vector<cv::Point2f> vo2dFtPt, std::vector<bool> vbHypFlg)
+CTraj::CTraj(std::vector<int> vnFrmCnt, std::vector<cv::Rect2f> voBBox, std::vector<cv::Point2f> vo2dFtPt, std::vector<bool> vbPredFlg)
 {
 	setTrajFrmCnts(vnFrmCnt);
 	setTrajBBoxs(voBBox);
 	setTraj2dFtPts(vo2dFtPt);
-	setTrajHypFlgs(vbHypFlg);
+	setTrajPredFlgs(vbPredFlg);
 }
 
 CTraj::~CTraj(void)
@@ -33,7 +33,7 @@ CTraj::~CTraj(void)
 	std::vector<int>().swap(m_vnTrajFrmCnt);
 	std::vector<cv::Rect2f>().swap(m_voTrajBBox);
 	std::vector<cv::Point2f>().swap(m_voTraj2dFtPt);
-	std::vector<bool>().swap(m_vbTrajHypFlg);
+	std::vector<bool>().swap(m_vbTrajPredFlg);
 }
 
 CCandNd::CCandNd(void)
@@ -65,7 +65,7 @@ CTrkNd::CTrkNd(void)
 	setId(-1);
 	setNtrFrmCnt(-1);
 	setMtchCandFlg(false);
-	setHypFlg(false);
+	setPredFlg(false);
 	setVis(1.0);
 	setDepIdx(-1);
 }
@@ -83,7 +83,7 @@ CTrkNd::CTrkNd(CCandNd oCandNd, int nSt8, int nId, int nNtrFrmCnt, cv::KalmanFil
 	setId(nId);
 	setNtrFrmCnt(nNtrFrmCnt);
 	setMtchCandFlg(false);
-	setHypFlg(false);
+	setPredFlg(false);
 	setVis(1.0);
 	setDepIdx(-1);
 	setKF(oKF);
@@ -278,7 +278,7 @@ void CObjTrk::process(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 
 	// insert each current tracking node to its trajectory
     for (std::vector<CTrkNd>::iterator it = m_voCurrTrkNd.begin(); it != m_voCurrTrkNd.end(); ++it)
-		it->addTrajNd(m_nFrmCnt, it->getBBox(), it->get2dFtPt(), it->getHypFlg());
+		it->addTrajNd(m_nFrmCnt, it->getBBox(), it->get2dFtPt(), it->getPredFlg());
 
 	// set the list of candidate nodes in previous frame
 	m_voPrevCandNd = m_voCurrCandNd;
@@ -299,10 +299,23 @@ void CObjTrk::output(void)
     if (0 == m_oCfg.getOutTrkTyp())
         sortTxtMot();
 
-    if ((m_oCfg.getOutImgFlg()) && ((2 == m_oCfg.getInVdoTyp()) || (1 == m_oCfg.getInVdoTyp())))
+    if ((1 == m_oCfg.getOutVdoTyp()) || (2 == m_oCfg.getOutVdoTyp()))
     {
-        // prepare the folder of output images
-        prepOutImgFlr();
+		cv::VideoCapture oVdoCap;
+
+		// input video source
+		if (2 == m_oCfg.getInVdoTyp())
+			oVdoCap = cv::VideoCapture(m_oCfg.getInVdoPth());
+
+		cv::VideoWriter oVdoWrt;
+
+		// create directory for output images
+		if (1 == m_oCfg.getOutVdoTyp())
+			//_mkdir(m_oCfg.getOutImgFlrPth());	// in Windows
+			mkdir(m_oCfg.getOutImgFlrPth(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	// in Linux
+		// create video writer
+		else if (2 == m_oCfg.getOutVdoTyp())
+			oVdoWrt = cv::VideoWriter(m_oCfg.getOutVdoPth(), CV_FOURCC('M', 'P', '4', '2'), m_oCfg.getFrmRt(), m_oCfg.getFrmSz());
 
         // text file for tracking results
         if (0 == m_oCfg.getOutTrkTyp())
@@ -312,25 +325,31 @@ void CObjTrk::output(void)
             std::sprintf(m_acOutTrkFlrPth, m_oCfg.getOutTrkFlrPth());
 
         std::vector<CTrkNd> voTrkNd;
-        int nFrmCnt = m_oCfg.getProcStFrmCnt();
+        int nFrmCnt = ST_FRM_CNT;
         cv::Mat oImgFrm;
 
         cv::namedWindow("current frame", CV_WINDOW_NORMAL);
-        std::printf("\nPlot tracking results...\n");
+        std::printf("\nOutput tracking results...\n");
 
         while (true)
         {
-            std::printf("plot - frame %06d\n", nFrmCnt);
+            std::printf("output - frame %06d\n", nFrmCnt);
 
             std::vector<CTrkNd>().swap(voTrkNd);
             bool bProcFlg;
 
-            char acOutImgNm[128] = { 0 };
-            char acOutImgPth[128] = { 0 };
-            std::sprintf(acOutImgNm, "%06d.jpg", nFrmCnt);
-            std::sprintf(acOutImgPth, m_oCfg.getOutImgFlrPth());
-            std::strcat(acOutImgPth, acOutImgNm);
-            oImgFrm = cv::imread(acOutImgPth, CV_LOAD_IMAGE_COLOR);
+			// read frame image
+			if (1 == m_oCfg.getInVdoTyp())
+			{
+				char acInImgNm[128] = { 0 };
+				char acInImgPth[128] = { 0 };
+				std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
+				std::sprintf(acInImgPth, m_oCfg.getInFrmFlrPth());
+				std::strcat(acInImgPth, acInImgNm);
+				oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
+			}
+			else if (2 == m_oCfg.getInVdoTyp())
+				oVdoCap >> oImgFrm;
 
             // read object tracking results in MOTChallenge format
             if (0 == m_oCfg.getOutTrkTyp())
@@ -343,6 +362,19 @@ void CObjTrk::output(void)
             pltTrkBBox(oImgFrm, nFrmCnt, voTrkNd);
             cv::imshow("current frame", oImgFrm);
 			cv::waitKey(1);
+
+			// output plotted image
+			if (1 == m_oCfg.getOutVdoTyp())
+			{
+				char acOutImgNm[128] = { 0 };
+				char acOutImgPth[128] = { 0 };
+				std::sprintf(acOutImgNm, "%06d.jpg", nFrmCnt);
+				std::sprintf(acOutImgPth, m_oCfg.getOutImgFlrPth());
+				std::strcat(acOutImgPth, acOutImgNm);
+				cv::imwrite(acOutImgPth, oImgFrm);
+			}
+			else if (2 == m_oCfg.getOutVdoTyp())
+				oVdoWrt.write(oImgFrm);
 
             if (!bProcFlg)
                 break;
@@ -422,10 +454,10 @@ void CObjTrk::detLftNd(void)
 
 		it = find(viLftTrkNd.begin(), viLftTrkNd.end(), i);
 
-        int nHypFrmNum = m_voCurrTrkNd[i].getTrajHypNum();
+        int nPredFrmNum = m_voCurrTrkNd[i].getTrajPredNum();
 
-		// the number of frames that the object is tracked as hypothesis (by prediction) exceeds the threshold
-		if ((nHypFrmNum > m_oCfg.getTrkHypFrmNumThld()) ||
+		// the number of frames that the object is tracked as by prediction exceeds the threshold
+		if ((nPredFrmNum > m_oCfg.getTrkPredFrmNumThld()) ||
 			// the object is being occluded by other objects
 			(ND_ST8_OCCL == m_voCurrTrkNd[i].getSt8()) ||
 			// the current tracking node needs to be removed
@@ -579,16 +611,18 @@ void CObjTrk::trkPred(void)
 		{
             double fMtchScr, fMaxMtchScr = 0.0;
             int iMaxMtchScr = -1;
-            float fDistWgtStpSz;
 
 			cv::Size oFrmSz = m_oCfg.getFrmSz();
-			fDistWgtStpSz = (((m_oCfg.getFrmSz().height - it->get2dFtPt().y) / (m_oCfg.getFrmSz().height * DIST_WGT_2D_DEP_STP_SZ)) * DIST_WGT_DEP_INC) + 1.0f;
 
             for (int i = 0; i < m_voCurrCandNd.size(); i++)
             {
                 if (!m_voCurrCandNd[i].getMtchTrkFlg())
                 {
-                    fMtchScr = fDistWgtStpSz * calcBBoxIou(it->getBBox(), m_voCurrCandNd[i].getBBox());
+					if (m_oCfg.getTrkFrmRtThld() <= m_oCfg.getFrmRt())
+						fMtchScr = calcBBoxIou(it->getBBox(), m_voCurrCandNd[i].getBBox());
+					else
+						fMtchScr = 1.0 / cv::norm(it->get2dFtPt() - m_voCurrCandNd[i].get2dFtPt());
+
                     if (fMtchScr > fMaxMtchScr)
                     {
                         fMaxMtchScr = fMtchScr;
@@ -598,12 +632,12 @@ void CObjTrk::trkPred(void)
             }
 
             // matched with an unmatched candidate node
-            if (MTCH_ND_IOU_THLD < fMaxMtchScr)
+            if (m_oCfg.getTrkMtchScrThld() < fMaxMtchScr)
             {
 				it->setCandNd(m_voCurrCandNd[iMaxMtchScr], m_voCurrCandNd[iMaxMtchScr].getSt8());
 				it->setMtchCandFlg(true);
-				it->setHypFlg(false);
-                it->resetTrajHypFlg();
+				it->setPredFlg(false);
+                it->resetTrajPredFlg();
 				m_voCurrCandNd[iMaxMtchScr].setMtchTrkFlg(true);
 			}
             // track by prediction
@@ -628,11 +662,11 @@ void CObjTrk::trkPred(void)
                         it->setCandNd(m_voPredNd[iPred], ND_ST8_DFLT);
                 }
 
-				it->setHypFlg(true);
+				it->setPredFlg(true);
             }
 		}
 		else
-            it->resetTrajHypFlg();
+            it->resetTrajPredFlg();
 	}
 }
 
@@ -642,7 +676,6 @@ void CObjTrk::mtchTrkCand(CTrkNd& oTrkNd, cv::Rect2f oPredBBox, cv::Point2f oPre
 	{
 		int iMaxMtchScr = -1;
 		double fMtchScr, fMaxMtchScr = -1.0;
-		float fDistWgtStpSz;
 
 		for (int i = 0; i < m_voCurrCandNd.size(); i++)
 		{
@@ -651,12 +684,11 @@ void CObjTrk::mtchTrkCand(CTrkNd& oTrkNd, cv::Rect2f oPredBBox, cv::Point2f oPre
                 // real-time processing: use IOU between bounding boxes as matching score
                 // otherwise: use 2D distance between foot points as matching score
 				cv::Size oFrmSz = m_oCfg.getFrmSz();
-				fDistWgtStpSz = (((m_oCfg.getFrmSz().height - m_voCurrCandNd[i].get2dFtPt().y) / (m_oCfg.getFrmSz().height * DIST_WGT_2D_DEP_STP_SZ)) * DIST_WGT_DEP_INC) + 1.0f;
 
-                if (SLO_FRM_RT_THLD  <= m_oCfg.getFrmRt())
-                    fMtchScr = fDistWgtStpSz * calcBBoxIou(oPredBBox, m_voCurrCandNd[i].getBBox());
+                if (m_oCfg.getTrkFrmRtThld()  <= m_oCfg.getFrmRt())
+                    fMtchScr = calcBBoxIou(oPredBBox, m_voCurrCandNd[i].getBBox());
                 else
-					fMtchScr = fDistWgtStpSz / cv::norm(oPred2dFtPt - m_voCurrCandNd[i].get2dFtPt());
+					fMtchScr = 1.0 / cv::norm(oPred2dFtPt - m_voCurrCandNd[i].get2dFtPt());
 
                 if (fMtchScr > fMaxMtchScr)
                 {
@@ -667,12 +699,11 @@ void CObjTrk::mtchTrkCand(CTrkNd& oTrkNd, cv::Rect2f oPredBBox, cv::Point2f oPre
 		}
 
 		// matched with a candidate node
-		if ((SLO_FRM_RT_THLD  <= m_oCfg.getFrmRt()) ? (MTCH_ND_IOU_THLD < fMaxMtchScr) :
-			((1.0f / m_oCfg.getTrkDistThld()) < fMaxMtchScr))
+		if (m_oCfg.getTrkMtchScrThld() < fMaxMtchScr)
 		{
 			oTrkNd.setCandNd(m_voCurrCandNd[iMaxMtchScr], m_voCurrCandNd[iMaxMtchScr].getSt8());
 			oTrkNd.setMtchCandFlg(true);
-			oTrkNd.setHypFlg(false);
+			oTrkNd.setPredFlg(false);
 			m_voCurrCandNd[iMaxMtchScr].setMtchTrkFlg(true);
 		}
 	}
@@ -718,33 +749,38 @@ void CObjTrk::initCandNdLs(std::vector<CDetNd>& voDetNd)
 	}
 
 	// set the number of matched frames by comparing with previous candidate nodes
-	int iMaxCandIou;
-	double fCandIou, fMaxCandIou;
+	int iMaxNtrScr;
+	double fNtrScr, fMaxNtrScr;
+
 	for (int i = 0; i < m_voCurrCandNd.size(); i++)
 	{
-        fMaxCandIou = 0.0;
-        iMaxCandIou = -1;
+        fMaxNtrScr = 0.0;
+        iMaxNtrScr = -1;
         for (int j = 0; j < m_voPrevCandNd.size(); j++)
         {
             if (!m_voPrevCandNd[j].getMtchTrkFlg())
             {
                 if (m_oCfg.getTrkNtrFrmNumThld() >= m_voPrevCandNd[j].getMtchBBoxNum())
                 {
-                    fCandIou = calcBBoxIou(m_voCurrCandNd[i].getBBox(), m_voPrevCandNd[j].getBBox());
-                    if ((NTR_PREV_IOU_THLD < fCandIou) && (fMaxCandIou < fCandIou))
+					if (m_oCfg.getTrkFrmRtThld() <= m_oCfg.getFrmRt())
+						fNtrScr = calcBBoxIou(m_voPrevCandNd[j].getBBox(), m_voCurrCandNd[i].getBBox());
+					else
+						fNtrScr = 1.0 / cv::norm(m_voPrevCandNd[j].get2dFtPt() - m_voCurrCandNd[i].get2dFtPt());
+
+                    if ((m_oCfg.getTrkNtrScrThld() < fNtrScr) && (fMaxNtrScr < fNtrScr))
                     {
-                        fMaxCandIou = fCandIou;
-                        iMaxCandIou = j;
+                        fMaxNtrScr = fNtrScr;
+                        iMaxNtrScr = j;
                     }
                 }
             }
         }
 
         // if matched with a previous candidate node, add to the trajectory
-        if ((0 <= iMaxCandIou) && (0.0 < fMaxCandIou))
+        if ((0 <= iMaxNtrScr) && (0.0 < fMaxNtrScr))
         {
-            m_voCurrCandNd[i].setMtchBBoxs(m_voPrevCandNd[iMaxCandIou].getMtchBBoxs());
-            m_voCurrCandNd[i].addMtchBBox(m_voPrevCandNd[iMaxCandIou].getBBox());
+            m_voCurrCandNd[i].setMtchBBoxs(m_voPrevCandNd[iMaxNtrScr].getMtchBBoxs());
+            m_voCurrCandNd[i].addMtchBBox(m_voPrevCandNd[iMaxNtrScr].getBBox());
         }
     }
 }
@@ -865,12 +901,12 @@ void CObjTrk::outTxtMot(CTrkNd oTrkNd)
 
 	for (int i = 0; i < oTrkNd.getTrajLen(); i++)
 	{
-	    if (!oTrkNd.getTrajHypFlg(i))
+	    if (!oTrkNd.getTrajPredFlg(i))
             std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n",
                 oTrkNd.getTrajFrmCnt(i), oTrkNd.getId(), oTrkNd.getTrajBBox(i).x, oTrkNd.getTrajBBox(i).y, oTrkNd.getTrajBBox(i).width, oTrkNd.getTrajBBox(i).height);
 	}
 
-    if (!oTrkNd.getHypFlg())
+    if (!oTrkNd.getPredFlg())
         std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n",
             m_nFrmCnt, oTrkNd.getId(), oTrkNd.getBBox().x, oTrkNd.getBBox().y, oTrkNd.getBBox().width, oTrkNd.getBBox().height);
 
@@ -885,7 +921,7 @@ void CObjTrk::outTxtKitti(CTrkNd oTrkNd)
 
 	for (int i = 0; i < oTrkNd.getTrajLen(); i++)
 	{
-	    if (!oTrkNd.getTrajHypFlg(i))
+	    if (!oTrkNd.getTrajPredFlg(i))
         {
             std::sprintf(acOutTrkTxtNm, "%06d.txt", oTrkNd.getTrajFrmCnt(i));
             std::sprintf(acOutTrkTxtPth, m_acOutTrkFlrPth);
@@ -901,7 +937,7 @@ void CObjTrk::outTxtKitti(CTrkNd oTrkNd)
 
 	}
 
-	if (!oTrkNd.getHypFlg())
+	if (!oTrkNd.getPredFlg())
     {
         std::sprintf(acOutTrkTxtNm, "%06d.txt", m_nFrmCnt);
         std::sprintf(acOutTrkTxtPth, m_acOutTrkFlrPth);
@@ -918,120 +954,45 @@ void CObjTrk::outTxtKitti(CTrkNd oTrkNd)
 
 void CObjTrk::sortTxtMot(void)
 {
-    std::vector<CTrkNd> voTrkNd;
-    char acBuf[256] = { 0 };
-    int nFrmCnt, nId, nDetScr;
-    cv::Rect2f oBBox;
-    cv::Point3f o3dFtPt;
+	std::vector<CTrkNd> voTrkNd;
+	char acBuf[256] = { 0 };
+	int nFrmCnt, nId, nDetScr;
+	cv::Rect2f oBBox;
+	cv::Point3f o3dFtPt;
 	FILE* pfOutTrkTxt;
 
-    // read from the txt file
-    std::ifstream ifsOutTrkTxt;
-    ifsOutTrkTxt.open(m_oCfg.getOutTrkTxtPth());
+	// read from the txt file
+	std::ifstream ifsOutTrkTxt;
+	ifsOutTrkTxt.open(m_oCfg.getOutTrkTxtPth());
 
-    ifsOutTrkTxt.getline(acBuf, 256);
+	ifsOutTrkTxt.getline(acBuf, 256);
 
-    while (!ifsOutTrkTxt.eof())
-    {
-        std::sscanf(acBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nFrmCnt, &nId,
-            &oBBox.x, &oBBox.y, &oBBox.width, &oBBox.height,
-            &nDetScr, &o3dFtPt.x, &o3dFtPt.y, &o3dFtPt.z);
+	while (!ifsOutTrkTxt.eof())
+	{
+		std::sscanf(acBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nFrmCnt, &nId,
+			&oBBox.x, &oBBox.y, &oBBox.width, &oBBox.height,
+			&nDetScr, &o3dFtPt.x, &o3dFtPt.y, &o3dFtPt.z);
 
-        voTrkNd.push_back(CTrkNd(nFrmCnt, nId, oBBox));
+		voTrkNd.push_back(CTrkNd(nFrmCnt, nId, oBBox));
 
-        ifsOutTrkTxt.getline(acBuf, 256);
-    }
+		ifsOutTrkTxt.getline(acBuf, 256);
+	}
 
-    ifsOutTrkTxt.close();
+	ifsOutTrkTxt.close();
 
 	// sort objects by frame counts
 	std::sort(voTrkNd.begin(), voTrkNd.end(), cmpFrmCnt);
 
-    // write into the txt file
-    pfOutTrkTxt = std::fopen(m_oCfg.getOutTrkTxtPth(), "w");
+	// write into the txt file
+	pfOutTrkTxt = std::fopen(m_oCfg.getOutTrkTxtPth(), "w");
 
-    for (std::vector<CTrkNd>::iterator it = voTrkNd.begin(); it != voTrkNd.end(); ++it)
-    {
-        std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n", it->getFrmCnt(), it->getId(),
-            it->getBBox().x, it->getBBox().y, it->getBBox().width, it->getBBox().height);
-    }
+	for (std::vector<CTrkNd>::iterator it = voTrkNd.begin(); it != voTrkNd.end(); ++it)
+	{
+		std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n", it->getFrmCnt(), it->getId(),
+			it->getBBox().x, it->getBBox().y, it->getBBox().width, it->getBBox().height);
+	}
 
-    std::fclose(pfOutTrkTxt);
-}
-
-void CObjTrk::prepOutImgFlr(void)
-{
-    int nFrmCnt, nProcFrmNum = 0;
-    cv::Mat oImgFrm;
-
-    // create directory for output images
-    if (m_oCfg.getOutImgFlg())
-        //_mkdir(m_oCfg.getOutImgFlrPth());	// in Windows
-        mkdir(m_oCfg.getOutImgFlrPth(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	// in Linux
-
-	std::printf("\nPrepare output image folder...\n");
-
-    if (2 == m_oCfg.getInVdoTyp())
-    {
-        nFrmCnt = ST_FRM_CNT;
-
-        cv::VideoCapture oVdoCap;
-        oVdoCap = cv::VideoCapture(m_oCfg.getInVdoPth());
-        while (true)
-        {
-            oVdoCap >> oImgFrm;
-
-            if (oImgFrm.empty())
-                break;
-
-            if ((0 < m_oCfg.getProcFrmNum()) && (m_oCfg.getProcFrmNum() < nProcFrmNum))
-                break;
-
-            if (m_oCfg.getProcStFrmCnt() <= nFrmCnt)
-            {
-                std::printf("output - frame %06d\n", nFrmCnt);
-
-                char acOutImgNm[128] = { 0 };
-                char acOutImgPth[128] = { 0 };
-                std::sprintf(acOutImgNm, "%06d.jpg", nFrmCnt);
-                std::sprintf(acOutImgPth, m_oCfg.getOutImgFlrPth());
-                std::strcat(acOutImgPth, acOutImgNm);
-                cv::imwrite(acOutImgPth, oImgFrm);
-                nProcFrmNum++;
-            }
-
-            nFrmCnt++;
-        }
-    }
-    else if (1 == m_oCfg.getInVdoTyp())
-    {
-        nFrmCnt = m_oCfg.getProcStFrmCnt();
-
-        while (true)
-        {
-            std::printf("output - frame %06d\n", nFrmCnt);
-
-            if ((0 < m_oCfg.getProcFrmNum()) && (m_oCfg.getProcFrmNum() < nProcFrmNum))
-                break;
-
-            char acInImgNm[128] = { 0 };
-            char acInImgPth[128] = { 0 };
-            std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
-            std::sprintf(acInImgPth, m_oCfg.getInFrmFlrPth());
-            std::strcat(acInImgPth, acInImgNm);
-            oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
-
-            char acOutImgNm[128] = { 0 };
-            char acOutImgPth[128] = { 0 };
-            std::sprintf(acOutImgNm, "%06d.jpg", nFrmCnt);
-            std::sprintf(acOutImgPth, m_oCfg.getOutImgFlrPth());
-            std::strcat(acOutImgPth, acOutImgNm);
-            cv::imwrite(acOutImgPth, oImgFrm);
-
-            nFrmCnt++;
-            nProcFrmNum++;
-        }
-    }
+	std::fclose(pfOutTrkTxt);
 }
 
 bool CObjTrk::rdObjTrkMot(std::vector<CTrkNd>& voTrkNd, int nFrmCnt)
@@ -1162,12 +1123,5 @@ void CObjTrk::pltTrkBBox(cv::Mat& oImgFrm, int nFrmCnt, std::vector<CTrkNd> voTr
 				cv::rectangle(oImgFrm, oBBox, cv::Scalar(0, 0, 255), 2);
 			}
 		}
-
-		char acOutImgNm[128] = { 0 };
-		char acOutImgPth[128] = { 0 };
-		std::sprintf(acOutImgNm, "%06d.jpg", nFrmCnt);
-		std::sprintf(acOutImgPth, m_oCfg.getOutImgFlrPth());
-		std::strcat(acOutImgPth, acOutImgNm);
-		cv::imwrite(acOutImgPth, oImgFrm);
 	}
 }

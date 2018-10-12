@@ -2,29 +2,31 @@
   // general information
   "genInfo": {
     // path of folder for input image files, necessary when inVdoTyp = 1
-    "inFrmFlrPth": "./data/img1/",
+    "inFrmFlrPth": ".\\data\\img1\\",
     // path of input video stream, necessary when inVdoTyp = 2
-    "inVdoPth": "./data/vdo.avi",
+    "inVdoPth": ".\\data\\vdo.avi",
     // path of input ROI image
-    "inRoiPth": "./data/roi.jpg",
+    "inRoiPth": ".\\data\\roi.jpg",
     // path of input text file of object detection, necessary when inDetTyp = 0
-    "inDetTxtPth": "./data/det.txt",
+    "inDetTxtPth": ".\\data\\det.txt",
     // path of input folder of object detection, necessary when inDetTyp = 1
-    "inDetFlrPth": "./data/det/",
+    "inDetFlrPth": ".\\data\\det\\",
     // path of output text file of tracking results, necessary when outTrkTyp = 0
-    "outTrkTxtPth": "./data/res.txt",
+    "outTrkTxtPth": ".\\data\\res.txt",
     // path of output folder of tracking results, necessary when outTrkTyp = 1
-    "outTrkFlrPth": "./data/res/",
-    // path of folder for output image files, necessary when outImgFlg = 1
-    "outImgFlrPth": "./data/outImg1/",
-    // type of input video source: 0: no video source; 1: image files; 2: video file (1 or 2 when outImgFlg = 1)
+    "outTrkFlrPth": ".\\data\\res\\",
+    // path of folder for output plotted image files, necessary when outVdoTyp = 1
+    "outImgFlrPth": ".\\data\\outImg1\\",
+    // path of output plotted video file, necessary when outVdoTyp = 2
+    "outVdoPth": ".\\data\\outVdo.avi",
+    // type of input video source: 0: no video source; 1: image files; 2: video file
     "inVdoTyp": 2,
     // type of input detection: 0: MOTChallenge format; 1: KITTI format
     "inDetTyp": 0,
     // type of output tracking: 0: MOTChallenge format; 1: KITTI format
     "outTrkTyp": 0,
-    // flag of output image files
-    "outImgFlg": 1,
+    // type of output plotted video source: 0: no output; 1: image files; 2: video file
+    "outVdoTyp": 1,
     // flag of selecting ROI image
     "selRoiFlg": 0,
     //! starting frame count to process
@@ -35,7 +37,7 @@
     "ovrdFrmSz": [ 640, 480 ],
     // overriden frame rate, necessary when inVdoTyp = 0 or 1
     "ovrdFrmRt": 25.0,
-    // flag of plotting the number of object identity, necessary when outTrkTyp = 0 and outImgFlg = 1
+    // flag of plotting the number of object identity, necessary when outTrkTyp = 0 and outVdoTyp = 1 or 2
     "pltIdFlg": 1,
     // resized video frame height (-1: original size)
     "rszFrmHei": -1
@@ -44,13 +46,15 @@
   "objTrk": {
     // threshold of detection score (in percentage)
     "detScrThld": 0.0,
-    // threshold for distance in terms of ratio of frame size to determine nearby object nodes
-    "trkDistRatThld": 0.1,
+    // threshold for frame rate: high: matched by IOU; low: matched by the inverse of pixel distance between foot points
+    "trkFrmRtThld": 5.0,
+    // threshold for the matching score between a tracked node and a detected node
+    "trkMtchScrThld": 0.35,
+    // threshold for the matching score for entering nodes
+    "trkNtrScrThld": 0.25,
     // threshold of existing time in seconds for entering objects
     "trkNtrTmSecThld": 0.1,
-    // threshold of time in seconds that the objects are tracked as hypotheses (by prediction)
-    "trkHypTmSecThld": 0.2,
-    // threshold of time in seconds to keep past trajectory for each object
-    "trkTrajTmSecThld": 3.0
+    // threshold of time in seconds that the objects are tracked by prediction
+    "trkPredTmSecThld": 0.2
   }
 }
