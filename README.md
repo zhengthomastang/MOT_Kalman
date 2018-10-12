@@ -1,10 +1,10 @@
 # MOT_Kalman
 
-This repository contains our C++ implementation of (intra-camera) online multiple object tracking based on Kalman filtering. It is useful for efficient tracklet generation in data association. 
+This repository contains our C++ implementation of (intra-camera) online multiple object tracking based on Kalman filtering. By tuning some hyperparameters, it is capable of reducing false nagatives and false positives. This algorithm is useful for efficient tracklet generation in data association. 
 
 ## Introduction
 
-This package is designed for generating 2D tracklets in each single camera. A 2D Kalman-filter-based tracking-by-detection method is adopted. The package also includes tools for manual region of interest (ROI) selection. 
+This package is designed for generating 2D tracklets in each single camera. A 2D Kalman-filter-based tracking-by-detection method is adopted. We also provide the capability of reducing false negatives and false positives. Besides, the package includes tools for manual region of interest (ROI) selection. 
 
 ## Coding Structure
 1. `./obj/` folder: Libraries of .cpp files
@@ -20,9 +20,8 @@ This package is designed for generating 2D tracklets in each single camera. A 2D
 ```g++ -I/usr/local/include/ -L/usr/local/lib/ -g -o bin ./src/main.cpp ./src/Cfg.cpp ./src/RoiSel.cpp ./src/ObjDet.cpp ./src/ObjTrk.cpp -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs -lopencv_videoio -lopencv_video -lm```
 
 ## How to Use
-1. Set the corresponding input/output paths in the configuration file if necessary. 
-2. When running the program, a window called `current frame` will pop up first.
-3. When the ROI image is not selected, an ROI image of the entire frame will be automatically created. If the user wants to select a specified ROI, set `selRoiFlg` to 1. The user can perform 3 choices: 1) press `p` to proceed to the frame that s/he wants to select ROI in, 2) press `Esc` and load the existing ROI image, 3) press `s` to select ROI in the current frame. The process of selecting ROI is described as follows: 
+1. Set the corresponding input/output paths in the configuration file if necessary. **Please note that the input video source (folder of images or video file) is ONLY necessary for plotting tracking results. The ONLY required input for the tracking algorithm is the detection results in MOTChallenge or KITTI format.** Without the input video source, the user can set `inVdoTyp` as 0. Also, the frame size and frame rate are required at `ovrdFrmSz` and `ovrdFrmRt` respectively. 
+2. When the ROI image is not selected, an ROI image of the entire frame will be automatically created. If the user wants to select a specified ROI, set `selRoiFlg` to 1. The user can perform 3 choices: 1) press `p` to proceed to the frame that s/he wants to select ROI in, 2) press `Esc` and load the existing ROI image, 3) press `s` to select ROI in the current frame. The process of selecting ROI is described as follows: 
    1. A new window called `ROI selector` pops out. This should be the current frame that the user proceeds to.
    2. Click on the image around the ROI. A blue circle stands for each click and a white line connects two adjacent clicks. Note that in order to make a valid ROI, the last click should be close to the first click, i.e., two blue circles should overlap.
 
@@ -37,16 +36,18 @@ This package is designed for generating 2D tracklets in each single camera. A 2D
 </div>
 
    4. During ROI selection, if mis-clicking on wrong places, the user can press `r`. All the markers will be cleared, and s/he can start over.
-4. The user can choose to plot tracking results (as colorful bounding boxes for different IDs) at the output window by setting `pltTrkResFlg` to 1. The past trajectories of foot points can also be plotted when `pltTrajTmSec` is larger than zero. 
+3. The user can choose to output plotted tracking results (as colored bounding boxes for different IDs) by setting `outImgFlg` to 1. As a reminder, the input video source is required for plotting tracking results. 
 
 <div align="center">
     <img src="/pic/pic2.jpg", width="640">
 </div>
 
-5. To improve the continuity of tracklets, each object is tracked by prediction of Kalman filter for several frames even when the detection is missing. Here are some ways to fine-tune the performance: 
+4. To improve the continuity of tracklets, each object is tracked by prediction of Kalman filter for several frames even when the detection is missing. The predicted instances will be removed if no following tracklet is found. Here are some ways to fine-tune the performance: 
    1. To reduce false positives (short-living objects), the user can increase `trkNtrTmSecThld`. The unit is second. 
    2. To reduce false negatives (gaps in trajectories), the user can increase `trkHypTmSecThld`. The unit is second. 
-   3. To reduce identity switches, when the frame rate is smaller than 5 fps, the user can decrease `trkDistRatThld`. The unit is the inverse of the number of pixels. Otherwise the user has to increase the IOU thresholds defined in `ObjTrk.h`. 
+   3. To reduce identity switches, when the frame rate is smaller than 5 fps, the user can decrease `trkDistRatThld`. The unit is the inverse of the number of pixels. Otherwise the user has to increase the IOU thresholds defined in `ObjTrk.h`. The threshold for frame rate (5 fps) can be changed by modifying `SLO_FRM_RT_THLD` defined in `ObjTrk.h`.
+   
+5. Finally, the algorithm assumes that both the object IDs and frame IDs are 1-based, which means they always start counting from 1. To change it to 0-based, the user needs to modify `ST_OBJ_ID` and `ST_FRM_CNT` defined in `ObjTrk.h` before compiling.
 
 ## Disclaimer
 For any question you can contact [Zheng (Thomas) Tang](https://github.com/zhengthomastang).
