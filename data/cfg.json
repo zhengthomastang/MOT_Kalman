@@ -2,23 +2,23 @@
   // general information
   "genInfo": {
     // path of folder for input image files, necessary when inVdoTyp = 1
-    "inFrmFlrPth": ".\\data\\img1\\",
+    "inFrmFlrPth": "./data/img1/",
     // path of input video stream, necessary when inVdoTyp = 2
-    "inVdoPth": ".\\data\\vdo.avi",
+    "inVdoPth": "./data/vdo.avi",
     // path of input ROI image
-    "inRoiPth": ".\\data\\roi.jpg",
+    "inRoiPth": "./data/roi.jpg",
     // path of input text file of object detection, necessary when inDetTyp = 0
-    "inDetTxtPth": ".\\data\\det.txt",
+    "inDetTxtPth": "./data/det.txt",
     // path of input folder of object detection, necessary when inDetTyp = 1
-    "inDetFlrPth": ".\\data\\det\\",
+    "inDetFlrPth": "./data/det/",
     // path of output text file of tracking results, necessary when outTrkTyp = 0
-    "outTrkTxtPth": ".\\data\\res.txt",
+    "outTrkTxtPth": "./data/res.txt",
     // path of output folder of tracking results, necessary when outTrkTyp = 1
-    "outTrkFlrPth": ".\\data\\res\\",
+    "outTrkFlrPth": "./data/res/",
     // path of folder for output plotted image files, necessary when outVdoTyp = 1
-    "outImgFlrPth": ".\\data\\outImg1\\",
+    "outImgFlrPth": "./data/outImg1/",
     // path of output plotted video file, necessary when outVdoTyp = 2
-    "outVdoPth": ".\\data\\outVdo.avi",
+    "outVdoPth": "./data/outVdo.avi",
     // type of input video source: 0: no video source; 1: image files; 2: video file
     "inVdoTyp": 2,
     // type of input detection: 0: MOTChallenge format; 1: KITTI format
