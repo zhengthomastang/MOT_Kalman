@@ -59,7 +59,7 @@ void CRoiSel::addNd(int nX, int nY)
 	}
 }
 
-void CRoiSel::genRoi(char* acROIName)
+void CRoiSel::genRoi(char* acRoiNm)
 {
 	std::vector<std::vector<cv::Point> > vvCtr;
 
@@ -71,11 +71,11 @@ void CRoiSel::genRoi(char* acROIName)
 
 	vvCtr.push_back(m_voNd);
 	cv::drawContours(m_oImgRoi, vvCtr, 0, cv::Scalar(255, 255, 255), CV_FILLED);
-	cv::imwrite(acROIName, m_oImgRoi);
+	cv::imwrite(acRoiNm, m_oImgRoi);
 	std::vector<std::vector<cv::Point> >().swap(vvCtr);
 }
 
-bool CRoiSel::selRoi(const cv::Mat& oImgOrig, CCfg& oCfg)
+bool CRoiSel::selRoi(const cv::Mat& oImgOrig, char* acRoiNm)
 {
 	std::cout << "Hot keys: \n"
 		 << "\tESC - finish selecting ROI (region of interest)\n"
@@ -84,10 +84,11 @@ bool CRoiSel::selRoi(const cv::Mat& oImgOrig, CCfg& oCfg)
 
 	cv::namedWindow("ROI selector", CV_WINDOW_NORMAL);
 
+	cv::Size oFrmSz = oImgOrig.size();
 	m_oImgCp = oImgOrig.clone();
-	m_oImgExp = cv::Mat::zeros(cv::Size((oCfg.getFrmSz().width + 20), (oCfg.getFrmSz().height + 20)), CV_8UC3);
+	m_oImgExp = cv::Mat::zeros(cv::Size((oFrmSz.width + 20), (oFrmSz.height + 20)), CV_8UC3);
 	m_oImgCp.copyTo(m_oImgExp(cv::Rect(10, 10, m_oImgCp.cols, m_oImgCp.rows)));
-	m_oImgRoi = cv::Mat::zeros(cv::Size(oCfg.getFrmSz().width, oCfg.getFrmSz().height), CV_8UC1);
+	m_oImgRoi = cv::Mat::zeros(oFrmSz, CV_8UC1);
 
 	cv::imshow("ROI selector", m_oImgExp);
 	cv::setMouseCallback("ROI selector", on_mouse2);  // register for mouse event
@@ -105,18 +106,22 @@ bool CRoiSel::selRoi(const cv::Mat& oImgOrig, CCfg& oCfg)
 			m_bPlgnCmpl = false;
 			// std::cout << "size of m_voNd: " << m_voNd.size() << std::endl;  //[debug]
 			m_oImgCp = oImgOrig.clone();
-			m_oImgExp = cv::Mat::zeros(cv::Size((oCfg.getFrmSz().width + 20), (oCfg.getFrmSz().height + 20)), CV_8UC3);
+			m_oImgExp = cv::Mat::zeros(cv::Size((oFrmSz.width + 20), (oFrmSz.height + 20)), CV_8UC3);
 			m_oImgCp.copyTo(m_oImgExp(cv::Rect(10, 10, m_oImgCp.cols, m_oImgCp.rows)));
 			cv::imshow("ROI selector", m_oImgExp);
 		}
 
 		if (nKey == 'o' && m_bPlgnCmpl == true)  //produce the ROI image
 		{
-			genRoi(oCfg.getInRoiPth());
+			genRoi(acRoiNm);
 
 			cv::namedWindow("ROI image", CV_WINDOW_NORMAL);
 			cv::imshow("ROI image", m_oImgRoi);
-			m_oImgRoi = cv::Mat::zeros(oCfg.getFrmSz(), CV_8UC1);
+
+			m_oImgRoi = cv::Mat::zeros(oFrmSz, CV_8UC1);
+			std::vector<cv::Point>().swap(m_voNd);
+			m_bPlgnCmpl = false;
+
 			break;
 		}
 	}

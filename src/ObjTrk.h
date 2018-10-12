@@ -39,27 +39,28 @@
 #define KF_ERR_COV_PRE (1)
 //! define the breadth in pixels to determine frame/ROI edge case (default: 10)
 #define FRM_EDG_BDTH (10)
+//! define the starting object ID (default: 1)
+#define ST_OBJ_ID (1)
+//! define the starting frame count (default: 1)
+#define ST_FRM_CNT (1)
+//! define the threshold of frame rate for slow-frame-rate processing (default: 5.0f)
+#define SLO_FRM_RT_THLD (5.0f)
 
-// trajectory of tracking interms of frame counts, bounding boxes, 2D foot points
+// trajectory of tracking in terms of frame counts, bounding boxes, 2D foot points
 class CTraj
 {
 public:
 	CTraj(void);
-	CTraj(std::vector<int> vnFrmCnt, std::vector<cv::Rect2f> voBBox, std::vector<cv::Point2f> vo2dFtPt);
+	CTraj(std::vector<int> vnFrmCnt, std::vector<cv::Rect2f> voBBox, std::vector<cv::Point2f> vo2dFtPt, std::vector<bool> vbHypFlg);
 	~CTraj(void);
 
 	inline int getTrajLen(void) { return m_vnTrajFrmCnt.size(); }
-	inline void addTrajTrkNd(int nFrmCnt, cv::Rect2f oBBox, cv::Point2f o2dFtPt)
+	inline void addTrajNd(int nFrmCnt, cv::Rect2f oBBox, cv::Point2f o2dFtPt, bool bHypFlg)
 	{
 		addTrajFrmCnt(nFrmCnt);
 		addTrajBBox(oBBox);
 		addTraj2dFtPt(o2dFtPt);
-	}
-	inline void rmv1stTrajTrkNd(void)
-	{
-		m_vnTrajFrmCnt.erase(m_vnTrajFrmCnt.begin());
-		m_voTrajBBox.erase(m_voTrajBBox.begin());
-		m_voTraj2dFtPt.erase(m_voTraj2dFtPt.begin());
+		addTrajHypFlg(bHypFlg);
 	}
 	inline std::vector<int> getTrajFrmCnts() { return m_vnTrajFrmCnt; }
 	inline int getTrajFrmCnt(int nIdx) { return m_vnTrajFrmCnt[nIdx]; }
@@ -73,6 +74,30 @@ public:
 	inline cv::Point2f getTraj2dFtPt(int nIdx) { return m_voTraj2dFtPt[nIdx]; }
 	inline void setTraj2dFtPts(std::vector<cv::Point2f> vo2dFtPt) { m_voTraj2dFtPt = vo2dFtPt; }
 	inline void addTraj2dFtPt(cv::Point2f o2dFtPt) { m_voTraj2dFtPt.push_back(o2dFtPt); }
+	inline std::vector<bool> getTrajHypFlgs() { return m_vbTrajHypFlg; }
+	inline bool getTrajHypFlg(int nIdx) { return m_vbTrajHypFlg[nIdx]; }
+	inline void setTrajHypFlgs(std::vector<bool> vbTrajHypFlg) { m_vbTrajHypFlg = vbTrajHypFlg; }
+	inline void addTrajHypFlg(bool bHypFlg) { m_vbTrajHypFlg.push_back(bHypFlg); }
+	inline void resetTrajHypFlg(void)
+	{
+	    for (int i = m_vbTrajHypFlg.size() - 1; i >= 0; i--)
+        {
+            if (m_vbTrajHypFlg[i])
+                m_vbTrajHypFlg[i] = false;
+        }
+    }
+	inline int getTrajHypNum(void)
+	{
+	    int nTrajHypNum = 0;
+	    for (int i = m_vbTrajHypFlg.size() - 1; i >= 0; i--)
+        {
+            if (m_vbTrajHypFlg[i])
+                nTrajHypNum++;
+            else
+                break;
+        }
+	    return nTrajHypNum;
+    }
 
 protected:
 	//! frame counts
@@ -81,6 +106,8 @@ protected:
 	std::vector<cv::Rect2f> m_voTrajBBox;
 	//! 2D foot points
 	std::vector<cv::Point2f> m_voTraj2dFtPt;
+	//! flags of tracking by hypothesis
+	std::vector<bool> m_vbTrajHypFlg;
 };
 
 // candidate node for tracker to match with
@@ -100,43 +127,29 @@ public:
 	}
 	inline cv::Rect2f getBBox(void) { return m_oBBox; }
 	inline void setBBox(cv::Rect2f oBBox) { m_oBBox = oBBox; }
-	inline cv::RotatedRect getElps(void) { return m_oElps; }
-	inline void setElps(cv::RotatedRect oElps) { m_oElps = oElps; }
-	inline cv::Point2f getMassCent(void) { return m_oMassCent; }
-	inline void setMassCent(cv::Point2f oMassCent) { m_oMassCent = oMassCent; }
-	inline double getArea(void) { return m_fArea; }
-	inline void setArea(double fArea) { m_fArea = fArea; }
 	inline cv::Point2f get2dFtPt(void) { return m_o2dFtPt; }
 	inline void set2dFtPt(cv::Point2f o2dFtPt) { m_o2dFtPt = o2dFtPt; }
-	inline cv::Point2f get2dHdPt(void) { return m_o2dHdPt; }
-	inline void set2dHdPt(cv::Point2f o2dHdPt) { m_o2dHdPt = o2dHdPt; }
 	inline int getSt8(void) { return m_nSt8; }
 	inline void setSt8(int nSt8) { m_nSt8 = nSt8; }
-	inline int getMtchFrmNum(void) { return m_nMtchFrmNum; }
-	inline void setMtchFrmNum(int nMtchFrmNum) { m_nMtchFrmNum = nMtchFrmNum; }
-	inline void decMtchFrmNum(void) { m_nMtchFrmNum = (m_nMtchFrmNum > 0) ? (m_nMtchFrmNum - 1) : 0; }
 	inline bool getMtchTrkFlg(void) { return m_bMtchTrkFlg; }
 	inline void setMtchTrkFlg(bool bMtchTrkFlg) { m_bMtchTrkFlg = bMtchTrkFlg; }
+	inline std::vector<cv::Rect2f> getMtchBBoxs() { return m_voMtchBBox; }
+	inline cv::Rect2f getMtchBBox(int nIdx) { return m_voMtchBBox[nIdx]; }
+	inline void setMtchBBoxs(std::vector<cv::Rect2f> voBBox) { m_voMtchBBox = voBBox; }
+	inline void addMtchBBox(cv::Rect2f oBBox) { m_voMtchBBox.push_back(oBBox); }
+	inline int getMtchBBoxNum(void) { return m_voMtchBBox.size(); }
 
 protected:
 	//! object bounding box
 	cv::Rect2f m_oBBox;
-	//! object ellipse
-	cv::RotatedRect m_oElps;
-	//! mass center
-	cv::Point2f m_oMassCent;
-	//! object area
-	double m_fArea;
 	//! 2D foot point
 	cv::Point2f m_o2dFtPt;
-	//! 2D head point
-	cv::Point2f m_o2dHdPt;
 	//! state of the object node
 	int m_nSt8;
-	//! number of matching frames
-	int m_nMtchFrmNum;
 	//! flag of matching with tracking node
 	bool m_bMtchTrkFlg;
+	//! list of matched candidate bounding boxes
+	std::vector<cv::Rect2f> m_voMtchBBox;
 };
 
 // tracking node
@@ -144,6 +157,7 @@ class CTrkNd : public CCandNd, public CTraj
 {
 public:
 	CTrkNd(void);
+	CTrkNd(int nFrmCnt, int nId, cv::Rect2f oBBox);
 	CTrkNd(CCandNd oCandNd, int nSt8, int nId, int nNtrFrmCnt, cv::KalmanFilter oKF);
 	~CTrkNd(void);
 
@@ -151,11 +165,7 @@ public:
 	{
 		setDetNd(oCandNd);
 		setBBox(oCandNd.getBBox());
-		setElps(oCandNd.getElps());
-		setMassCent(oCandNd.getMassCent());
-		setArea(oCandNd.getArea());
 		set2dFtPt(oCandNd.get2dFtPt());
-		set2dHdPt(oCandNd.get2dHdPt());
 		setSt8(nSt8);
 		setMtchTrkFlg(true);
 	}
@@ -165,11 +175,8 @@ public:
 	inline void setNtrFrmCnt(int nNtrFrmCnt) { m_nNtrFrmCnt = nNtrFrmCnt; }
 	inline bool getMtchCandFlg(void) { return m_bMtchCandFlg; }
 	inline void setMtchCandFlg(bool bMtchCandFlg) { m_bMtchCandFlg = bMtchCandFlg; }
-	inline int getHypFrmNum(void) { return m_nHypFrmNum; }
-	inline void setHypFrmNum(int nHypFrmNum) { m_nHypFrmNum = nHypFrmNum; }
-	inline void incHypFrmNum(void) { m_nHypFrmNum++; }
-	inline void decHypFrmNum(void) { m_nHypFrmNum = (m_nHypFrmNum > 0) ? (m_nHypFrmNum - 1) : 0; }
-	inline void resetHypFrmNum(void) { m_nHypFrmNum = 0; }
+	inline bool getHypFlg(void) { return m_bHypFlg; }
+	inline void setHypFlg(bool bHypFlg) { m_bHypFlg = bHypFlg; }
 	inline double getVis(void) { return m_fVis; }
 	inline void setVis(double fVis) { m_fVis = fVis; }
 	inline int getDepIdx(void) { return m_nDepIdx; }
@@ -185,17 +192,14 @@ public:
 	inline void setKFSt8Post(cv::Mat oSt8Vec) { m_oKF.statePost = oSt8Vec; }
 	inline cv::Mat predKF(void) { return m_oKF.predict(); }
 	inline void corrKF(cv::Mat oMeasVec) { m_oKF.correct(oMeasVec); }
-	inline CTraj getTraj(void) { return CTraj(m_vnTrajFrmCnt, m_voTrajBBox, m_voTraj2dFtPt); }
+	inline CTraj getTraj(void) { return CTraj(m_vnTrajFrmCnt, m_voTrajBBox, m_voTraj2dFtPt, m_vbTrajHypFlg); }
 	inline void setTraj(CTraj oTraj)
 	{
 		setTrajFrmCnts(oTraj.getTrajFrmCnts());
 		setTrajBBoxs(oTraj.getTrajBBoxs());
 		setTraj2dFtPts(oTraj.getTraj2dFtPts());
+		setTrajHypFlgs(oTraj.getTrajHypFlgs());
 	}
-	inline cv::Mat getImgMdl(void) { return m_oImgMdl; }
-	inline void setImgMdl(cv::Mat oImgMdl) { m_oImgMdl = oImgMdl.clone(); }
-	inline int getImgMdlTyp(void) { return m_nImgMdlTyp; }
-	inline void setImgMdlTyp(int nImgMdlTyp) { m_nImgMdlTyp = nImgMdlTyp; }
 
 protected:
 	//! object identity
@@ -204,18 +208,14 @@ protected:
 	int m_nNtrFrmCnt;
 	//! flag of matching with a candidate node
 	bool m_bMtchCandFlg;
-	//! the number of frames that the tracking node is tracked as hypothesis (to prevent propagation of tracking error)
-	int m_nHypFrmNum;
+	//! flag of tracking by hypothesis
+	bool m_bHypFlg;
 	//! the visibility (0 -> 1: more area visible)
 	double m_fVis;
 	//! the depth index (larger -> closer)
 	int m_nDepIdx;
 	//! Kalman filter
 	cv::KalmanFilter m_oKF;
-	//! image model
-	cv::Mat m_oImgMdl;
-	//! image model type: -1: none; 0: at the edge; 1: normal
-	int m_nImgMdlTyp;
 };
 
 class CObjTrk
@@ -229,17 +229,15 @@ public:
 	//! run tracking algorithm
 	void process(std::vector<CDetNd>& voDetNd, int nFrmCnt);
 	//! outputs tracking results
-	void output(cv::Mat& oImgFrm);
+	void output(void);
 	//! sets video frame rate
 	inline void setFrmRt(double fFrmRt) { m_oCfg.setFrmRt(fFrmRt); }
 
 private:
-	//! detects entering tracking nodes
+	//! detects enteringstd::ifstream tracking nodes
 	void detNtrTrkNd(void);
 	//! detects left nodes
 	void detLftNd(void);
-	//! inserts each current tracking node to its trajectory
-	void insTrkNdTraj(void);
 	//! sets the list of predicted nodes
 	void initPredNdLs(void);
 	//! initializes Kalman filter
@@ -263,15 +261,23 @@ private:
 	//! calculates the visibility of tracking node
 	double calcVis(cv::Rect2f oBBox, int iDep, cv::Mat oDepMap);
 	//! outputs tracking results in text file in MOTChallenge format
-	void outTxtMot(void);
+	void outTxtMot(CTrkNd oTrkNd);
 	//! outputs tracking results in text file in KITTI format
-	void outTxtKitti(void);
+	void outTxtKitti(CTrkNd oTrkNd);
+	//! sorts the tracking results in MOTChallenge format
+	void sortTxtMot(void);
+	//! prepares the folder of output images
+	void prepOutImgFlr(void);
+	//! reads object tracking results in MOTChallenge format
+	bool rdObjTrkMot(std::vector<CTrkNd>& voTrkNd, int nFrmCnt);
+	//! reads object tracking  results in KITTI format
+	bool rdObjTrkKitti(std::vector<CTrkNd>& voTrkNd, int nFrmCnt);
 	//! plots tracking bounding box(es) on the frame image
-	void pltTrkBBox(cv::Mat& oImgFrm);
+	void pltTrkBBox(cv::Mat& oImgFrm, int nFrmCnt, std::vector<CTrkNd> voTrkNd);
 
 	//! configuration file
 	CCfg m_oCfg;
-	//! vector of colors of bounding boxes for plotting 2D tracking results
+	//! vector of colors of bounding boxes for plotting tracking results
 	std::vector<cv::Scalar> m_voBBoxClr;
 	//! current frame count
 	int m_nFrmCnt;
@@ -279,14 +285,18 @@ private:
 	int m_nMaxId;
 	//! ROI image
 	cv::Mat m_oImgRoi;
+	//! next tracking node
+	CTrkNd m_oNxtTrkNd;
 	//! path of output folder of tracking results
 	char m_acOutTrkFlrPth[256];
+	//! text file for writing tracking results
+	std::ifstream m_ifsOutTrkTxt;
 	//! list of candidate nodes in current frame
 	std::vector<CCandNd> m_voCurrCandNd;
 	//! list of candidate nodes in previous frame
 	std::vector<CCandNd> m_voPrevCandNd;
 	//! list of tracking nodes in current frame
 	std::vector<CTrkNd> m_voCurrTrkNd;
-	//! list of tracking nodes by 3D prediction
+	//! list of tracking nodes by prediction
 	std::vector<CTrkNd> m_voPredNd;
 };

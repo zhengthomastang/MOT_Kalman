@@ -19,7 +19,7 @@ class CDetNd
 {
 public:
 	CDetNd(void);
-	CDetNd(cv::Rect2f oDetBBox, float fDetScr, char* acDetCls = "person", int nFrmCnt = -1);
+	CDetNd(cv::Rect2f oDetBBox, float fDetScr, char* acDetCls, int nFrmCnt = -1);
 	~CDetNd(void);
 
 	inline int getFrmCnt(void) { return m_nFrmCnt; }
@@ -51,21 +51,17 @@ public:
 	//! initializes object detector
 	void initialize(CCfg oCfg, cv::Mat oImgRoi);
 	//! performs object detection
-	void process(std::vector<CDetNd>& voDetNd, int nFrmCnt);
-	//! outputs object detection as txt file and/or images
-	void output(cv::Mat& oImgFrm, std::vector<CDetNd>& voDetNd);
+	bool process(std::vector<CDetNd>& voDetNd, int nFrmCnt);
 
 private:
 	//! reads object detection results in MOTChallenge format
-	void rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt);
+	bool rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt);
 	//! reads object detection results in KITTI format
-	void rdObjDetKitti(std::vector<CDetNd>& voDetNd, int nFrmCnt);
+	bool rdObjDetKitti(std::vector<CDetNd>& voDetNd, int nFrmCnt);
 	//! performs non-maximum suppression
 	void nonMaxSuppr(std::vector<CDetNd>& voDetNd);
 	//! post-process to remove outliers
 	void rmvOutBBox(std::vector<CDetNd>& voDetNd);
-	//! outputs object detection as images
-	void pltDetBBox(cv::Mat& oImgFrm, std::vector<CDetNd>& voDetNd);
 
 	//! configuration file
 	CCfg m_oCfg;

@@ -1,10 +1,10 @@
 {
   // general information
   "genInfo": {
-    // path of input video stream, necessary when inVdoTyp = 0
-    "inVdoPth": "./data/vdo.avi",
     // path of folder for input image files, necessary when inVdoTyp = 1
     "inFrmFlrPth": "./data/img1/",
+    // path of input video stream, necessary when inVdoTyp = 2
+    "inVdoPth": "./data/vdo.avi",
     // path of input ROI image
     "inRoiPth": "./data/roi.jpg",
     // path of input text file of object detection, necessary when inDetTyp = 0
@@ -15,38 +15,28 @@
     "outTrkTxtPth": "./data/res.txt",
     // path of output folder of tracking results, necessary when outTrkTyp = 1
     "outTrkFlrPth": "./data/res/",
-    // path of output video file, necessary when outVdoFlg = 1
-    "outVdoPth": "./data/outVdo.avi",
     // path of folder for output image files, necessary when outImgFlg = 1
     "outImgFlrPth": "./data/outImg1/",
-    // type of input video source: 0: video file; 1: image files
-    "inVdoTyp": 0,
+    // type of input video source: 0: no video source; 1: image files; 2: video file (1 or 2 when outImgFlg = 1)
+    "inVdoTyp": 2,
     // type of input detection: 0: MOTChallenge format; 1: KITTI format
     "inDetTyp": 0,
     // type of output tracking: 0: MOTChallenge format; 1: KITTI format
     "outTrkTyp": 0,
-    // flag of processing tracking
-    "procTrkFlg": 1,
-    // flag of output video file
-    "outVdoFlg": 1,
     // flag of output image files
-    "outImgFlg": 0,
+    "outImgFlg": 1,
     // flag of selecting ROI image
     "selRoiFlg": 0,
-    // flag of plotting tracking results
-    "pltTrkResFlg": 1,
-    // flag of plotting object detection
-    "pltDetFlg": 0,
     //! starting frame count to process
     "procStFrmCnt": 1,
     //! number of frames to process (-1: till the end of the video source)
     "procFrmNum": -1,
-    // overriden frame rate, necessary when inVdoTyp = 1
-    "ovrdFrmRt": 10.0,
-    // flag of plotting the number of object identity, necessary when pltTrkResFlg = 1
+    // overriden frame size, necessary when inVdoTyp = 0
+    "ovrdFrmSz": [ 640, 480 ],
+    // overriden frame rate, necessary when inVdoTyp = 0 or 1
+    "ovrdFrmRt": 25.0,
+    // flag of plotting the number of object identity, necessary when outTrkTyp = 0 and outImgFlg = 1
     "pltIdFlg": 1,
-    // time window in seconds for plotting previous trajectory, necessary when pltTrkResFlg = 1
-    "pltTrajTmSec": 2.0,
     // resized video frame height (-1: original size)
     "rszFrmHei": -1
   },

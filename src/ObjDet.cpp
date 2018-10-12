@@ -45,37 +45,57 @@ void CObjDet::initialize(CCfg oCfg, cv::Mat oImgRoi)
 	if (0 == m_oCfg.getInDetTyp())
 	{
 		m_ifsInDetTxt.close();
-		m_ifsInDetTxt.open(oCfg.getInDetTxtPth());
+		m_ifsInDetTxt.open(m_oCfg.getInDetTxtPth());
+
+		FILE* pfInDetTxt = std::fopen(m_oCfg.getInDetTxtPth(), "r");
+		if (pfInDetTxt == NULL)
+		{
+			std::cout << "Error: The KITTI detection results are not available. " << std::endl;
+			exit(1);
+		}
+		std::fclose(pfInDetTxt);
 	}
     // folder of detection results
-    else if (1 == m_oCfg.getInDetTyp())
+	else if (1 == m_oCfg.getInDetTyp())
+	{
+		char acInDetTxtNm[128] = { 0 };
+		char acInDetTxtPth[128] = { 0 };
+		std::sprintf(acInDetTxtNm, "%06d.txt", m_oCfg.getProcStFrmCnt());
 		std::sprintf(m_acInDetFlrPth, oCfg.getInDetFlrPth());
+		std::sprintf(acInDetTxtPth, m_acInDetFlrPth);
+		std::strcat(acInDetTxtPth, acInDetTxtNm);
+
+		FILE * pfInDetTxt = std::fopen(acInDetTxtPth, "r");
+		if (pfInDetTxt == NULL)
+		{
+			std::cout << "Error: The KITTI detection results are not available. " << std::endl;
+			exit(1);
+		}
+		std::fclose(pfInDetTxt);
+	}
 }
 
-void CObjDet::process(std::vector<CDetNd>& voDetNd, int nFrmCnt)
+bool CObjDet::process(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 {
+    bool bProcFlg;
 	std::vector<CDetNd>().swap(voDetNd);
 
 	// MOTChallenge format
 	if (0 == m_oCfg.getInDetTyp())
-		rdObjDetMot(voDetNd, nFrmCnt);
+		bProcFlg = rdObjDetMot(voDetNd, nFrmCnt);
 	// KITTI format
-	else
-		rdObjDetKitti(voDetNd, nFrmCnt);
+	else if (1 == m_oCfg.getInDetTyp())
+		bProcFlg = rdObjDetKitti(voDetNd, nFrmCnt);
 
 	if (NMS_DET_FLG)
 		nonMaxSuppr(voDetNd);
 
 	rmvOutBBox(voDetNd);
+
+	return bProcFlg;
 }
 
-void CObjDet::output(cv::Mat& oImgFrm, std::vector<CDetNd>& voDetNd)
-{
-	if (m_oCfg.getPltDetFlg())
-		pltDetBBox(oImgFrm, voDetNd);
-}
-
-void CObjDet::rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt)
+bool CObjDet::rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 {
 	bool bNxtFrmFlg = true;
 
@@ -94,52 +114,62 @@ void CObjDet::rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 		}
 
 		char acInDetBuf[256] = { 0 };
-		int nDetFrmCnt = -1, nDetId = -1;
-		float fDetScr = 0.0f;
+		int nDetFrmCnt, nDetId;
+		float fDetScr;
 		cv::Rect2f oDetBBox;
-		cv::Point3f oDet3dCoord;
-		char acDetCls[128];
+		cv::Point3f oDet3dFtPt;
+		char acDetCls[128] = { 0 };
 
 		// read from the input txt file
 		m_ifsInDetTxt.getline(acInDetBuf, 256);
-		std::sscanf(acInDetBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nDetFrmCnt, &nDetId,
-			&oDetBBox.x, &oDetBBox.y, &oDetBBox.width, &oDetBBox.height,
-			&fDetScr, &oDet3dCoord.x, &oDet3dCoord.y, &oDet3dCoord.z);
+		if (!m_ifsInDetTxt.eof())
+        {
+            std::sscanf(acInDetBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nDetFrmCnt, &nDetId,
+                &oDetBBox.x, &oDetBBox.y, &oDetBBox.width, &oDetBBox.height,
+                &fDetScr, &oDet3dFtPt.x, &oDet3dFtPt.y, &oDet3dFtPt.z);
 
-		if (nDetFrmCnt >= nFrmCnt)
-		{
-			// if there is object detected
-			if (0 <= nDetFrmCnt)
-			{
-				// validate the detected bounding box
-				if (valBBox(oDetBBox, m_oCfg.getFrmSz(), m_oImgRoi))
-				{
-					m_oNxtDetNd = CDetNd(oDetBBox, fDetScr, acDetCls, nDetFrmCnt);
+            if (nDetFrmCnt >= nFrmCnt)
+            {
+                // if there is object detected
+                if (0 <= nDetFrmCnt)
+                {
+                    // validate the detected bounding box
+                    if (valBBox(oDetBBox, m_oCfg.getFrmSz(), m_oImgRoi))
+                    {
+                        m_oNxtDetNd = CDetNd(oDetBBox, fDetScr, acDetCls, nDetFrmCnt);
 
-					// only objects in the current frame are pushed back
-					// filter away detected objects with low score
-					if (nDetFrmCnt <= nFrmCnt)
-					{
-						if (m_oCfg.getDetScrThld() <= fDetScr)
-							voDetNd.push_back(m_oNxtDetNd);
-					}
-				}
-			}
-		}
+                        // only objects in the current frame are pushed back
+                        // filter away detected objects with low score
+                        if (nDetFrmCnt <= nFrmCnt)
+                        {
+                            if (m_oCfg.getDetScrThld() <= fDetScr)
+                                voDetNd.push_back(m_oNxtDetNd);
+                        }
+                    }
+                }
+            }
+        }
 	}
+
+	if (!m_ifsInDetTxt.eof())
+        return true;
+    else
+        return false;
 }
 
-void CObjDet::rdObjDetKitti(std::vector<CDetNd>& voDetNd, int nFrmCnt)
+bool CObjDet::rdObjDetKitti(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 {
 	char acInDetTxtNm[128] = { 0 };
-	std::sprintf(acInDetTxtNm, "%06d.txt", nFrmCnt);
 	char acInDetTxtPth[128] = { 0 };
+	std::sprintf(acInDetTxtNm, "%06d.txt", nFrmCnt);
 	std::sprintf(acInDetTxtPth, m_acInDetFlrPth);
 	std::strcat(acInDetTxtPth, acInDetTxtNm);
 
-	FILE * poInDetTxt = std::fopen(acInDetTxtPth, "r");
-        if (poInDetTxt == NULL) { std::fputs("Error: input KITTI detection results not exist", stderr); exit(1); }
-	
+	FILE* pfInDetTxt = std::fopen(acInDetTxtPth, "r");
+    if (pfInDetTxt == NULL)
+        return false;
+	std::fclose(pfInDetTxt);
+
 	m_ifsInDetTxt.open(acInDetTxtPth);
 
 	char acInDetBuf[256] = { 0 };
@@ -167,6 +197,7 @@ void CObjDet::rdObjDetKitti(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 	}
 
 	m_ifsInDetTxt.close();
+	return true;
 }
 
 void CObjDet::nonMaxSuppr(std::vector<CDetNd>& voDetNd)
@@ -252,20 +283,4 @@ void CObjDet::rmvOutBBox(std::vector<CDetNd>& voDetNd)
 			viOutDetNd.erase(it);
 		}
 	}
-}
-
-void CObjDet::pltDetBBox(cv::Mat& oImgFrm, std::vector<CDetNd>& voDetNd)
-{
-	for (std::vector<CDetNd>::iterator it = voDetNd.begin(); it != voDetNd.end(); ++it)
-	{
-        // object bounding box
-		cv::rectangle(oImgFrm, it->getDetBBox(), cv::Scalar(0, 0, 0), 2);
-		// object class label
-		cv::Rect2f oDetClsLbl(it->getDetBBox().x, (it->getDetBBox().y - 20.0f), it->getDetBBox().width, 20.0f);
-		cv::rectangle(oImgFrm, oDetClsLbl, cv::Scalar(0, 0, 0), -1);
-		cv::putText(oImgFrm, it->getDetCls(), cv::Point(it->getDetBBox().x, (it->getDetBBox().y - 5.0f)), CV_FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
-	}
-
-	//cv::imshow("object detection", oImgFrm);
-	//cv::waitKey(0);
 }

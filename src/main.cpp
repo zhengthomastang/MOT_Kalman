@@ -15,53 +15,70 @@
 int main(int argc, char *argv[])
 {
 	int nFrmCnt, nProcFrmNum = 0;
+	bool bProcFlg = true;
 	cv::VideoCapture oVdoCap;
 	cv::VideoWriter oVdoWrt;
-	cv::Mat oImgFrm, oImgRoi, oImgBg;
+	cv::Mat oImgFrm, oImgRoi;
 	cv::Size oFrmSz;
 	std::vector<CDetNd> voDetNd;
 	CObjDet oObjDet;
 	CObjTrk oObjTrk;
 	CCfg oCfg;
-	oCfg.loadCfgFile();
 
+	// read configuration file
+	if (2 < argc)
+	{
+		std::printf("usage: %s <cfg_file_path>\n", argv[0]);
+		return 0;
+	}
+	else if (2 == argc)
+		oCfg.ldCfgFl(argv[1]);
+	else
+		oCfg.ldCfgFl('\0');
+
+    oImgFrm = cv::Mat(oFrmSz, CV_8UC3, cv::Scalar(0, 0, 0));
+
+    // set starting frame count
 	nFrmCnt = oCfg.getProcStFrmCnt();
 
-	cv::namedWindow("current frame", CV_WINDOW_NORMAL);
-
 	// read video source
-	// from video file
-	if (0 == oCfg.getInVdoTyp())
-		oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
 	// from image files
-	else if (1 == oCfg.getInVdoTyp())
+	if (1 == oCfg.getInVdoTyp())
 	{
 		char acInImgNm[128] = { 0 };
 		std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
- 		char acInImgPth[128] = { 0 };
- 		std::sprintf(acInImgPth, oCfg.getInFrmFlrPth());
-  		std::strcat(acInImgPth, acInImgNm);
+		char acInImgPth[128] = { 0 };
+		std::sprintf(acInImgPth, oCfg.getInFrmFlrPth());
+		std::strcat(acInImgPth, acInImgNm);
 		oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
 	}
+	// from video file
+	else if (2 == oCfg.getInVdoTyp())
+		oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
 
 	// handle error in reading video source
-	if ((0 == oCfg.getInVdoTyp()) && (!oVdoCap.isOpened()))
+	if (((1 == oCfg.getInVdoTyp()) && (oImgFrm.empty())) || ((2 == oCfg.getInVdoTyp()) && (!oVdoCap.isOpened())))
 	{
 		std::cout << "Error: The video is not captured properly" << std::endl;
 		return 0;
 	}
 
 	// set frame size
-	if (0 == oCfg.getInVdoTyp())
-	{
-		oFrmSz.width = (int)oVdoCap.get(CV_CAP_PROP_FRAME_WIDTH);
-		oFrmSz.height = (int)oVdoCap.get(CV_CAP_PROP_FRAME_HEIGHT);
-	}
-	else
+	if (1 == oCfg.getInVdoTyp())
 	{
 		oFrmSz.width = oImgFrm.cols;
 		oFrmSz.height = oImgFrm.rows;
 	}
+	else if (2 == oCfg.getInVdoTyp())
+	{
+		oFrmSz.width = (int)oVdoCap.get(CV_CAP_PROP_FRAME_WIDTH);
+		oFrmSz.height = (int)oVdoCap.get(CV_CAP_PROP_FRAME_HEIGHT);
+	}
+	else if (0 == oCfg.getInVdoTyp())
+    {
+        oFrmSz = oCfg.getOvrdFrmSz();
+        oImgFrm = cv::Mat(oFrmSz, CV_8UC3, cv::Scalar(0, 0, 0));
+    }
 
 	// resize frame if necessary
 	if (0 >= oCfg.getRszFrmHei())
@@ -73,81 +90,16 @@ int main(int argc, char *argv[])
 	}
 
 	// set video frame rate
-	if (0 == oCfg.getInVdoTyp())
+	if (2 == oCfg.getInVdoTyp())
 		oCfg.setFrmRt(oVdoCap.get(CV_CAP_PROP_FPS));
-	else
+	else if ((1 == oCfg.getInVdoTyp()) || (0 == oCfg.getInVdoTyp()))
 		oCfg.setFrmRt(oCfg.getOvrdFrmRt());
-
-    // set background image
-    if (0 == oCfg.getInVdoTyp())
-        oVdoCap >> oImgBg;
-    else
-        oImgBg = oImgFrm.clone();
-
-    if (0 < oCfg.getRszFrmHei())
-        cv::resize(oImgBg, oImgBg, oFrmSz);
 
 	// select ROI
 	if (oCfg.getSelRoiFlg())
 	{
-		while (true)
-		{
-			int nKeyboardIn = cv::waitKey(0);	// read keyboard event
-
-			if (nKeyboardIn == 'p')	// proceed to next frame
-			{
-				if (0 == oCfg.getInVdoTyp())
-					oVdoCap >> oImgFrm;
-				else
-				{
-					char acInImgNm[128] = { 0 };
-    					std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
-					char acInImgPth[128] = { 0 };
- 					std::sprintf(acInImgPth, oCfg.getInFrmFlrPth());
-					std::strcat(acInImgPth, acInImgNm);
-  					oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
-					nFrmCnt++;
-				}
-
-				if (oImgFrm.empty())
-				{
-					std::cout << "Error: Reach the end of the video." << std::endl;
-					return 0;
-				}
-
-				if (0 < oCfg.getRszFrmHei())
-					cv::resize(oImgFrm, oImgFrm, oFrmSz);
-
-				cv::imshow("current frame", oImgFrm);
-			}
-
-			if (nKeyboardIn == 27)	// press "Esc" to terminate
-			{
-				cv::destroyWindow("current frame");
-				break;
-			}
-
-			if (nKeyboardIn == 's')			// select ROI
-			{
-				if (oImgFrm.empty())
-				{
-					std::cout << "Error: Please proceed to the frame to select ROI first." << std::endl;
-					return 0;
-				}
-
-				oRoiSel.selRoi(oImgFrm, oCfg);
-				cv::destroyWindow("current frame");
-				break;
-			}
-
-			nFrmCnt++;
-		}
-
+		oRoiSel.selRoi(oImgFrm, oCfg.getInRoiPth());
 		oImgRoi = cv::imread(oCfg.getInRoiPth(), CV_LOAD_IMAGE_GRAYSCALE);
-
-		// reset video capture
-		if (0 == oCfg.getInVdoTyp())
-			oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
 	}
 	else
 	{
@@ -163,60 +115,16 @@ int main(int argc, char *argv[])
 	// set the ROI area
 	oCfg.setRoiArea(cv::countNonZero(oImgRoi));
 
-	// create video writer for output video
-	if (oCfg.getOutVdoFlg())
-	{
-		if (0 == oCfg.getInVdoTyp())
-			oVdoWrt = cv::VideoWriter(oCfg.getOutVdoPth(), CV_FOURCC('M', 'P', '4', '2'), (double)oVdoCap.get(CV_CAP_PROP_FPS), oFrmSz);
-		else
-			oVdoWrt = cv::VideoWriter(oCfg.getOutVdoPth(), CV_FOURCC('M', 'P', '4', '2'), oCfg.getFrmRt(), oFrmSz);
-	}
-
-	// create directory for output images
-	if (oCfg.getOutImgFlg())
-		//_mkdir(oCfg.getOutImgFlrPth());	// in Windows
-		mkdir(oCfg.getOutImgFlrPth(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	// in Linux
-
-	// reset video capture
-	if (0 == oCfg.getInVdoTyp())
-		oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
-
-	// set starting frame count
-	nFrmCnt = oCfg.getProcStFrmCnt();
-
 	// regular tracking
-	cv::namedWindow("current frame", CV_WINDOW_NORMAL);
 	std::printf("\nStart regular tracking...\n");
 	while (true)
 	{
-		// read video frame
-		if (0 == oCfg.getInVdoTyp())
-			oVdoCap >> oImgFrm;
-		else
-		{
-			char acInImgNm[128] = { 0 };
-			std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
-			char acInImgPth[128] = { 0 };
-			std::sprintf(acInImgPth, oCfg.getInFrmFlrPth());
-			std::strcat(acInImgPth, acInImgNm);
-			oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
-		}
-
-		// resize video frame if necessary
-		if (0 < oCfg.getRszFrmHei())
-			cv::resize(oImgFrm, oImgFrm, oFrmSz);
-
 		// run till the end of the video
-		if ((oImgFrm.empty()) || ((0 < oCfg.getProcFrmNum()) && (oCfg.getProcFrmNum() < nProcFrmNum)))
-			break;
-
-		// manually end the process by pressing "Esc"
-		int nKeyboardIn = cv::waitKey(1);	// read keyboard event
-		if (nKeyboardIn == 27)
+		if ((0 < oCfg.getProcFrmNum()) && (oCfg.getProcFrmNum() < nProcFrmNum))
 			break;
 
 		// showing frame count and time stamp
-		std::printf("frame %06d\n", nFrmCnt);
+		std::printf("tracking - frame %06d\n", nFrmCnt);
 
 		// initialize at the beginning
 		if (oCfg.getProcStFrmCnt() == nFrmCnt)
@@ -224,43 +132,21 @@ int main(int argc, char *argv[])
 			// initialize object detector
 			oObjDet.initialize(oCfg, oImgRoi);
 
-			// initialize tracker (not for self-calibration)
-			if (oCfg.getProcTrkFlg())
-				oObjTrk.initialize(oCfg);
+			// initialize tracker
+            oObjTrk.initialize(oCfg);
 		}
 
 		if (oCfg.getProcStFrmCnt() <= nFrmCnt)
 		{
 			// run object detection
-			oObjDet.process(voDetNd, nFrmCnt);
+			if (!oObjDet.process(voDetNd, nFrmCnt))
+				bProcFlg = false;
 
 			// run tracking
-			if (oCfg.getProcTrkFlg())
-				oObjTrk.process(voDetNd, nFrmCnt);
+            oObjTrk.process(voDetNd, nFrmCnt);
 
-			// output object detection results
-				oObjDet.output(oImgFrm, voDetNd);
-
-			// output tracking results
-			if (oCfg.getProcTrkFlg())
-				oObjTrk.output(oImgFrm);
-
-			cv::imshow("current frame", oImgFrm);
-
-			// write (plotted) frame to output video
-			if (oCfg.getOutVdoFlg())
-				oVdoWrt.write(oImgFrm);
-
-			// save output (plotted) frame image
-			if (oCfg.getOutImgFlg())
-			{
-				char acOutImgNm[128] = { 0 };
-				std::sprintf(acOutImgNm, "%06d.jpg", nFrmCnt);
- 				char acOutImgPth[128] = { 0 };
-				std::sprintf(acOutImgPth, oCfg.getOutImgFlrPth());
-				std::strcat(acOutImgPth, acOutImgNm);
-				cv::imwrite(acOutImgPth, oImgFrm);
-			}
+			if (!bProcFlg)
+				break;
 
 			nProcFrmNum++;
 		}
@@ -268,7 +154,8 @@ int main(int argc, char *argv[])
 		nFrmCnt++;
 	}
 
-	cv::destroyWindow("current frame");
+    // output tracking results
+    oObjTrk.output();
 
 	return 0;
 }
