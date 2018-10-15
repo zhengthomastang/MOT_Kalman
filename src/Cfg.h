@@ -101,11 +101,11 @@ private:
 	//! number of frames to process (-1: till the end of the video source)
 	int m_nProcFrmNum;
 	 //! overriden frame size, necessary when m_nInVdoTyp == 0
-    cv::Size m_oOvrdFrmSz;
+    	cv::Size m_oOvrdFrmSz;
 	//! overriden frame rate, necessary when m_nInVdoTyp == 0 or m_nInVdoTyp == 1
 	double m_fOvrdFrmRt;
-    //! flag of plotting the number of object identity, necessary when m_nOutTrkTyp == 0 and m_nOutVdoTyp == 1 or 2
-    bool m_bPltIdFlg;
+    	//! flag of plotting the number of object identity, necessary when m_nOutVdoTyp == 1 or 2
+    	bool m_bPltIdFlg;
 	//! resized video frame height (-1: original size)
 	int m_nRszFrmHei;
 	//! threshold of detection score (in percentage)

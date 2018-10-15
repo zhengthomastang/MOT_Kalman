@@ -929,7 +929,7 @@ void CObjTrk::outTxtKitti(CTrkNd oTrkNd)
 
             pfOutTrkTxt = std::fopen(acOutTrkTxtPth, "a");
 
-            std::fprintf(pfOutTrkTxt, "%s 0.0 0 0.0 %f %f %f %f 0.0 0.0 0.0 0.0 0.0 0.0 0.0\n", oTrkNd.getDetCls(),
+            std::fprintf(pfOutTrkTxt, "%s 0.0 %d 0.0 %f %f %f %f 0.0 0.0 0.0 0.0 0.0 0.0 0.0\n", oTrkNd.getDetCls(), oTrkNd.getId(),
                    oTrkNd.getTrajBBox(i).x, oTrkNd.getTrajBBox(i).y, (oTrkNd.getTrajBBox(i).x + oTrkNd.getTrajBBox(i).width - 1), (oTrkNd.getTrajBBox(i).y + oTrkNd.getTrajBBox(i).height - 1));
 
             std::fclose(pfOutTrkTxt);
@@ -945,7 +945,7 @@ void CObjTrk::outTxtKitti(CTrkNd oTrkNd)
 
         pfOutTrkTxt = std::fopen(acOutTrkTxtPth, "a");
 
-        std::fprintf(pfOutTrkTxt, "%s 0.0 0 0.0 %f %f %f %f 0.0 0.0 0.0 0.0 0.0 0.0 0.0\n", oTrkNd.getDetCls(),
+        std::fprintf(pfOutTrkTxt, "%s 0.0 %d 0.0 %f %f %f %f 0.0 0.0 0.0 0.0 0.0 0.0 0.0\n", oTrkNd.getDetCls(), oTrkNd.getId(),
             oTrkNd.getBBox().x, oTrkNd.getBBox().y, (oTrkNd.getBBox().x + oTrkNd.getBBox().width - 1), (oTrkNd.getBBox().y + oTrkNd.getBBox().height - 1));
 
         std::fclose(pfOutTrkTxt);
@@ -1069,7 +1069,7 @@ bool CObjTrk::rdObjTrkKitti(std::vector<CTrkNd>& voTrkNd, int nFrmCnt)
 	m_ifsOutTrkTxt.open(acOutTrkTxtPth);
 
 	char acBuf[256] = { 0 };
-	int nDummy2;
+	int nId;
 	float fDummy1, fDummy3, fDummy8, fDummy9, fDummy10, fDummy11, fDummy12, fDummy13, fDummy14;
 	cv::Rect2f oBBox;
 	cv::Point2f oBBoxMin, oBBoxMax;
@@ -1080,14 +1080,14 @@ bool CObjTrk::rdObjTrkKitti(std::vector<CTrkNd>& voTrkNd, int nFrmCnt)
 		// read from the input txt file
 		m_ifsOutTrkTxt.getline(acBuf, 256);
 		std::sscanf(acBuf, "%s %f %d %f %f %f %f %f %f %f %f %f %f %f %f", acDetCls, &fDummy1,
-			&nDummy2, &fDummy3, &oBBoxMin.x, &oBBoxMin.y, &oBBoxMax.x, &oBBoxMax.y,
+			&nId, &fDummy3, &oBBoxMin.x, &oBBoxMin.y, &oBBoxMax.x, &oBBoxMax.y,
 			&fDummy8, &fDummy9, &fDummy10, &fDummy11, &fDummy12, &fDummy13, &fDummy14);
 
 		oBBox = cv::Rect2f(oBBoxMin, oBBoxMax);
 
 		if (valBBox(oBBox, m_oCfg.getFrmSz(), m_oImgRoi))
 		{
-			m_oNxtTrkNd = CTrkNd(nFrmCnt, -1, oBBox);
+			m_oNxtTrkNd = CTrkNd(nFrmCnt, nId, oBBox);
 			voTrkNd.push_back(m_oNxtTrkNd);
 		}
 	}
@@ -1109,19 +1109,11 @@ void CObjTrk::pltTrkBBox(cv::Mat& oImgFrm, int nFrmCnt, std::vector<CTrkNd> voTr
 			nId = it->getId();
 			oBBox = it->getBBox();
 
-			if (ST_OBJ_ID <= nId)
-			{
-				// plot colored bounding box
-				cv::rectangle(oImgFrm, oBBox, m_voBBoxClr[nId % m_voBBoxClr.size()], 2);
-				// plot colored object ID
-				std::sprintf(acObjId, "%d", it->getId());
-				cv::putText(oImgFrm, acObjId, cv::Point((oBBox.x + (oBBox.width / 2)), (oBBox.y + (oBBox.height / 2))), cv::FONT_HERSHEY_SIMPLEX, 1, m_voBBoxClr[nId % m_voBBoxClr.size()], 2);
-			}
-			else
-			{
-				// plot colored bounding box
-				cv::rectangle(oImgFrm, oBBox, cv::Scalar(0, 0, 255), 2);
-			}
+            // plot colored bounding box
+            cv::rectangle(oImgFrm, oBBox, m_voBBoxClr[nId % m_voBBoxClr.size()], 2);
+            // plot colored object ID
+            std::sprintf(acObjId, "%d", it->getId());
+            cv::putText(oImgFrm, acObjId, cv::Point((oBBox.x + (oBBox.width / 2)), (oBBox.y + (oBBox.height / 2))), cv::FONT_HERSHEY_SIMPLEX, 1, m_voBBoxClr[nId % m_voBBoxClr.size()], 2);
 		}
 	}
 }

@@ -37,7 +37,7 @@
     "ovrdFrmSz": [ 640, 480 ],
     // overriden frame rate, necessary when inVdoTyp = 0 or 1
     "ovrdFrmRt": 25.0,
-    // flag of plotting the number of object identity, necessary when outTrkTyp = 0 and outVdoTyp = 1 or 2
+    // flag of plotting the number of object identity, necessary when outVdoTyp = 1 or 2
     "pltIdFlg": 1,
     // resized video frame height (-1: original size)
     "rszFrmHei": -1
