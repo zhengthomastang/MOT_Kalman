@@ -80,7 +80,7 @@ bool CRoiSel::selRoi(const cv::Mat& oImgOrig, char* acRoiNm)
 	std::cout << "Hot keys: \n"
 		 << "\tESC - finish selecting ROI (region of interest)\n"
 		 << "\tr - re-select ROI\n"
-		 << "\tENTER - produce ROI image\n";
+		 << "\to - produce ROI image\n";
 
 	cv::namedWindow("ROI selector", CV_WINDOW_NORMAL);
 

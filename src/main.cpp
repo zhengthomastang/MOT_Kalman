@@ -36,8 +36,6 @@ int main(int argc, char *argv[])
 	else
 		oCfg.ldCfgFl('\0');
 
-    oImgFrm = cv::Mat(oFrmSz, CV_8UC3, cv::Scalar(0, 0, 0));
-
     // set starting frame count
 	nFrmCnt = oCfg.getProcStFrmCnt();
 
@@ -54,8 +52,10 @@ int main(int argc, char *argv[])
 	}
 	// from video file
 	else if (2 == oCfg.getInVdoTyp())
+    {
 		oVdoCap = cv::VideoCapture(oCfg.getInVdoPth());
-
+        oVdoCap >> oImgFrm;
+    }
 	// handle error in reading video source
 	if (((1 == oCfg.getInVdoTyp()) && (oImgFrm.empty())) || ((2 == oCfg.getInVdoTyp()) && (!oVdoCap.isOpened())))
 	{
