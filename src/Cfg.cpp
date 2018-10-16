@@ -187,7 +187,7 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 	if (((0 == m_nInVdoTyp) || (1 == m_nInVdoTyp)))
 		CV_Assert(0 < m_fOvrdFrmRt);
 	CV_Assert(0 <= m_fDetScrThld);
-	if (((0 == m_nOutVdoTyp) || (1 == m_nOutVdoTyp)))
+	if (((1 == m_nOutVdoTyp) || (2 == m_nOutVdoTyp)))
 		CV_Assert((1 == m_nInVdoTyp) || (2 == m_nInVdoTyp));
 	CV_Assert(0 < m_fTrkFrmRtThld);
 	CV_Assert(0 < m_fTrkMtchScrThld);
