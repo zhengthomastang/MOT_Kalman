@@ -3,7 +3,7 @@
 //  Copyright (c) 2018 Zheng Tang <tangzhengthomas@gmail.com>.  All rights reserved.
 //
 //  Description:
-//      Implementation of Kalman-filter-based (2D) single-camera tracking
+//      Implementation of Kalman-filter-based multiple object tracking
 //
 //-----------------------------------------------------------------------------------
 
