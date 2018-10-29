@@ -39,10 +39,10 @@ public:
 	inline int getProcFrmNum(void) { return m_nProcFrmNum; }
 	inline cv::Size getOvrdFrmSz(void) { return m_oOvrdFrmSz; }
 	inline double getOvrdFrmRt(void) { return m_fOvrdFrmRt; }
-    inline bool getPltIdFlg(void) { return m_bPltIdFlg; }
+	inline bool getPltIdFlg(void) { return m_bPltIdFlg; }
 	inline int getRszFrmHei(void) { return m_nRszFrmHei; }
 	inline float getDetScrThld(void) { return m_fDetScrThld; }
-    inline float getTrkFrmRtThld(void) { return m_fTrkFrmRtThld; }
+	inline float getTrkFrmRtThld(void) { return m_fTrkFrmRtThld; }
 	inline float getTrkMtchScrThld(void) { return m_fTrkMtchScrThld; }
 	inline float getTrkNtrScrThld(void) { return m_fTrkNtrScrThld; }
 	inline float getTrkNtrTmSecThld(void) { return m_fTrkNtrTmSecThld; }
