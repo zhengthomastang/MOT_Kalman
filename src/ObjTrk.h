@@ -7,13 +7,13 @@
 #include "Cfg.h"
 #include "ObjDet.h"
 
-//! define the default state of object nodes
+//! define the default state of an object node
 #define ND_ST8_DFLT (-1)
-//! define the normal state of object nodes
+//! define the normal state of an object node
 #define ND_ST8_NORM (0)
-//! define the occluded state of object nodes
+//! define the occluded state of an object node
 #define ND_ST8_OCCL (1)
-//! define the partially occluded state of object nodes (by frame/ROI edge): ind obj w/ part of seg blob visible at frame/ROI edge
+//! define the edge state of an object node
 #define ND_ST8_EDG (2)
 //! define the threshold for the IOU between two tracking nodes that indicates full overlap (default: 0.85f)
 #define FULL_OVLP_IOU_THLD (0.85f)
