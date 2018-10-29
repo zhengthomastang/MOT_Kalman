@@ -34,7 +34,7 @@ CCfg::CCfg()
 	m_bPltIdFlg = true;
 	m_nRszFrmHei = -1;
 	m_fDetScrThld = 30.0f;
-    m_fTrkFrmRtThld = 5.0f;
+	m_fTrkFrmRtThld = 5.0f;
 	m_fTrkMtchScrThld = 0.35f;
 	m_fTrkNtrScrThld = 0.25f;
 	m_fTrkNtrTmSecThld = 0.1f;
@@ -73,7 +73,7 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 
 	std::string strCfg(pcBuf);
 	//strCfg.erase(std::remove_if(strCfg.begin(), strCfg.end(), [](char c) { return c >= 0 && isspace(c); }), strCfg.end());	// in Windows
-    strCfg.erase(std::remove_if(strCfg.begin(), strCfg.end(), ::isspace), strCfg.end());	// in Linux
+	strCfg.erase(std::remove_if(strCfg.begin(), strCfg.end(), ::isspace), strCfg.end());	// in Linux
 
 	int nParamPos = strCfg.find("\"inFrmFlrPth\"");
 	if (nParamPos != std::string::npos)
@@ -159,7 +159,7 @@ void CCfg::ldCfgFl(char* acCfgFlPth)
 	if (nParamPos != std::string::npos)
 		m_fDetScrThld = rdFlt(strCfg, nParamPos);
 
-    nParamPos = strCfg.find("\"trkFrmRtThld\"");
+	nParamPos = strCfg.find("\"trkFrmRtThld\"");
 	if (nParamPos != std::string::npos)
 		m_fTrkFrmRtThld = rdFlt(strCfg, nParamPos);
 
