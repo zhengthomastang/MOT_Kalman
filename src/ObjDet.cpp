@@ -123,32 +123,32 @@ bool CObjDet::rdObjDetMot(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 		// read from the input txt file
 		m_ifsInDetTxt.getline(acInDetBuf, 256);
 		if (!m_ifsInDetTxt.eof())
-        {
-            std::sscanf(acInDetBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nDetFrmCnt, &nDetId,
-                &oDetBBox.x, &oDetBBox.y, &oDetBBox.width, &oDetBBox.height,
-                &fDetScr, &oDet3dFtPt.x, &oDet3dFtPt.y, &oDet3dFtPt.z);
+		{
+		    std::sscanf(acInDetBuf, "%d,%d,%f,%f,%f,%f,%f,%f,%f,%f", &nDetFrmCnt, &nDetId,
+			&oDetBBox.x, &oDetBBox.y, &oDetBBox.width, &oDetBBox.height,
+			&fDetScr, &oDet3dFtPt.x, &oDet3dFtPt.y, &oDet3dFtPt.z);
 
-            if (nDetFrmCnt >= nFrmCnt)
-            {
-                // if there is object detected
-                if (0 <= nDetFrmCnt)
-                {
-                    // validate the detected bounding box
-                    if (valBBox(oDetBBox, m_oCfg.getFrmSz(), m_oImgRoi))
-                    {
-                        m_oNxtDetNd = CDetNd(oDetBBox, fDetScr, acDetCls, nDetFrmCnt);
+		    if (nDetFrmCnt >= nFrmCnt)
+		    {
+			// if there is object detected
+			if (0 <= nDetFrmCnt)
+			{
+			    // validate the detected bounding box
+			    if (valBBox(oDetBBox, m_oCfg.getFrmSz(), m_oImgRoi))
+			    {
+				m_oNxtDetNd = CDetNd(oDetBBox, fDetScr, acDetCls, nDetFrmCnt);
 
-                        // only objects in the current frame are pushed back
-                        // filter away detected objects with low score
-                        if (nDetFrmCnt <= nFrmCnt)
-                        {
-                            if (m_oCfg.getDetScrThld() <= fDetScr)
-                                voDetNd.push_back(m_oNxtDetNd);
-                        }
-                    }
-                }
-            }
-        }
+				// only objects in the current frame are pushed back
+				if (nDetFrmCnt == nFrmCnt)
+				{
+				    // filter away detected objects with low score
+				    if (m_oCfg.getDetScrThld() <= fDetScr)
+					voDetNd.push_back(m_oNxtDetNd);
+				}
+			    }
+			}
+		    }
+		}
 	}
 
 	if (!m_ifsInDetTxt.eof())
