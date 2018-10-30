@@ -457,7 +457,7 @@ void CObjTrk::detLftNd(void)
         int nPredFrmNum = m_voCurrTrkNd[i].getTrajPredNum();
 
 		// the number of frames that the object is tracked as by prediction exceeds the threshold
-		if ((nPredFrmNum > m_oCfg.getTrkPredFrmNumThld()) ||
+		if ((m_oCfg.getTrkPredFrmNumThld() < nPredFrmNum) ||
 			// the object is being occluded by other objects
 			(ND_ST8_OCCL == m_voCurrTrkNd[i].getSt8()) ||
 			// the current tracking node needs to be removed
