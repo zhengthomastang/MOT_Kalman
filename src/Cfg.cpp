@@ -4,6 +4,7 @@ CCfg::CCfg()
 {
 	m_oFrmSz = cv::Size(640, 480);
 	m_fFrmRt = 10.0f;
+	m_nRoiArea = m_oFrmSz.area();
 	//std::strcpy(m_acInFrmFlrPth, ".\\data\\img1\\");	// in Windows
 	std::strcpy(m_acInFrmFlrPth, "./data/img1/");	// in Linux
 	//std::strcpy(m_acInVdoPth, ".\\data\\vdo.avi");	// in Windows
