@@ -244,7 +244,7 @@ void CObjTrk::process(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 		it->setVis(fVis);
 
 		if (VIS_OCCL_OBJ_THLD > fVis)
-            it->setSt8(ND_ST8_OCCL);
+			it->setSt8(ND_ST8_OCCL);
 
 		// clear matching flag
 		it->setMtchCandFlg(false);
@@ -277,7 +277,7 @@ void CObjTrk::process(std::vector<CDetNd>& voDetNd, int nFrmCnt)
 	detNtrTrkNd();
 
 	// insert each current tracking node to its trajectory
-    for (std::vector<CTrkNd>::iterator it = m_voCurrTrkNd.begin(); it != m_voCurrTrkNd.end(); ++it)
+	for (std::vector<CTrkNd>::iterator it = m_voCurrTrkNd.begin(); it != m_voCurrTrkNd.end(); ++it)
 		it->addTrajNd(m_nFrmCnt, it->getBBox(), it->get2dFtPt(), it->getPredFlg());
 
 	// set the list of candidate nodes in previous frame
@@ -301,21 +301,21 @@ void CObjTrk::output(void)
 
     if ((1 == m_oCfg.getOutVdoTyp()) || (2 == m_oCfg.getOutVdoTyp()))
     {
-		cv::VideoCapture oVdoCap;
+	cv::VideoCapture oVdoCap;
 
-		// input video source
-		if (2 == m_oCfg.getInVdoTyp())
-			oVdoCap = cv::VideoCapture(m_oCfg.getInVdoPth());
+	// input video source
+	if (2 == m_oCfg.getInVdoTyp())
+		oVdoCap = cv::VideoCapture(m_oCfg.getInVdoPth());
 
-		cv::VideoWriter oVdoWrt;
+	cv::VideoWriter oVdoWrt;
 
-		// create directory for output images
-		if (1 == m_oCfg.getOutVdoTyp())
-			//_mkdir(m_oCfg.getOutImgFlrPth());	// in Windows
-			mkdir(m_oCfg.getOutImgFlrPth(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	// in Linux
-		// create video writer
-		else if (2 == m_oCfg.getOutVdoTyp())
-			oVdoWrt = cv::VideoWriter(m_oCfg.getOutVdoPth(), CV_FOURCC('M', 'P', '4', '2'), m_oCfg.getFrmRt(), m_oCfg.getFrmSz());
+	// create directory for output images
+	if (1 == m_oCfg.getOutVdoTyp())
+		//_mkdir(m_oCfg.getOutImgFlrPth());	// in Windows
+		mkdir(m_oCfg.getOutImgFlrPth(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);	// in Linux
+	// create video writer
+	else if (2 == m_oCfg.getOutVdoTyp())
+		oVdoWrt = cv::VideoWriter(m_oCfg.getOutVdoPth(), CV_FOURCC('M', 'P', '4', '2'), m_oCfg.getFrmRt(), m_oCfg.getFrmSz());
 
         // text file for tracking results
         if (0 == m_oCfg.getOutTrkTyp())
@@ -338,18 +338,18 @@ void CObjTrk::output(void)
             std::vector<CTrkNd>().swap(voTrkNd);
             bool bProcFlg;
 
-			// read frame image
-			if (1 == m_oCfg.getInVdoTyp())
-			{
-				char acInImgNm[128] = { 0 };
-				char acInImgPth[128] = { 0 };
-				std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
-				std::sprintf(acInImgPth, m_oCfg.getInFrmFlrPth());
-				std::strcat(acInImgPth, acInImgNm);
-				oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
-			}
-			else if (2 == m_oCfg.getInVdoTyp())
-				oVdoCap >> oImgFrm;
+            // read frame image
+            if (1 == m_oCfg.getInVdoTyp())
+            {
+		char acInImgNm[128] = { 0 };
+		char acInImgPth[128] = { 0 };
+		std::sprintf(acInImgNm, "%06d.jpg", nFrmCnt);
+		std::sprintf(acInImgPth, m_oCfg.getInFrmFlrPth());
+		std::strcat(acInImgPth, acInImgNm);
+		oImgFrm = cv::imread(acInImgPth, CV_LOAD_IMAGE_COLOR);
+            }
+            else if (2 == m_oCfg.getInVdoTyp())
+		oVdoCap >> oImgFrm;
 
             // read object tracking results in MOTChallenge format
             if (0 == m_oCfg.getOutTrkTyp())
@@ -902,13 +902,13 @@ void CObjTrk::outTxtMot(CTrkNd oTrkNd)
 	for (int i = 0; i < oTrkNd.getTrajLen(); i++)
 	{
 	    if (!oTrkNd.getTrajPredFlg(i))
-            std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n",
+            std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,1,-1,-1,-1\n",
                 oTrkNd.getTrajFrmCnt(i), oTrkNd.getId(), oTrkNd.getTrajBBox(i).x, oTrkNd.getTrajBBox(i).y, oTrkNd.getTrajBBox(i).width, oTrkNd.getTrajBBox(i).height);
 	}
 
-    if (!oTrkNd.getPredFlg())
-        std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n",
-            m_nFrmCnt, oTrkNd.getId(), oTrkNd.getBBox().x, oTrkNd.getBBox().y, oTrkNd.getBBox().width, oTrkNd.getBBox().height);
+	if (!oTrkNd.getPredFlg())
+	    std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,1,-1,-1,-1\n",
+	        m_nFrmCnt, oTrkNd.getId(), oTrkNd.getBBox().x, oTrkNd.getBBox().y, oTrkNd.getBBox().width, oTrkNd.getBBox().height);
 
 	std::fclose(pfOutTrkTxt);
 }
@@ -988,7 +988,7 @@ void CObjTrk::sortTxtMot(void)
 
 	for (std::vector<CTrkNd>::iterator it = voTrkNd.begin(); it != voTrkNd.end(); ++it)
 	{
-		std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,-1,-1,-1,-1\n", it->getFrmCnt(), it->getId(),
+		std::fprintf(pfOutTrkTxt, "%d,%d,%.3f,%.3f,%.3f,%.3f,1,-1,-1,-1\n", it->getFrmCnt(), it->getId(),
 			it->getBBox().x, it->getBBox().y, it->getBBox().width, it->getBBox().height);
 	}
 
