@@ -91,8 +91,8 @@ static bool valBBox(cv::Rect2f& oBBox, cv::Size oFrmSz, cv::Mat oImgRoi)
 	if ((oBBox.x + oBBox.width) >= oFrmSz.width) { oBBox.width = oFrmSz.width - oBBox.x - 1; }
 	if ((oBBox.y + oBBox.height) >= oFrmSz.height) { oBBox.height = oFrmSz.height - oBBox.y - 1; }
 	if ((oBBox.x >= 0.0f) && (oBBox.x < oFrmSz.width) && (oBBox.y >= 0.0f) && (oBBox.y < oFrmSz.height) && (oBBox.width > 0.0f) && (oBBox.height > 0.0f) &&
-		(0 < oImgRoi.at<uchar>(cv::Point(oBBox.x, oBBox.y))) && (0 < oImgRoi.at<uchar>(cv::Point((oBBox.x + oBBox.width), oBBox.y))) &&
-		(0 < oImgRoi.at<uchar>(cv::Point(oBBox.x, (oBBox.y + oBBox.height)))) && (0 < oImgRoi.at<uchar>(cv::Point((oBBox.x + oBBox.width), (oBBox.y + oBBox.height)))))
+		(0 < oImgRoi.at<uchar>(cv::Point(oBBox.x, oBBox.y))) && (0 < oImgRoi.at<uchar>(cv::Point((oBBox.x + oBBox.width - 1), oBBox.y))) &&
+		(0 < oImgRoi.at<uchar>(cv::Point(oBBox.x, (oBBox.y + oBBox.height - 1)))) && (0 < oImgRoi.at<uchar>(cv::Point((oBBox.x + oBBox.width - 1), (oBBox.y + oBBox.height - 1)))))
 		return true;
 	else
 		return false;
