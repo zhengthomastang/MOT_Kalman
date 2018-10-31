@@ -58,15 +58,15 @@ static bool cmpPtY(cv::Point2f oPt1, cv::Point2f oPt2)	// used to sort pixel poi
 }
 
 //! calculates intersection over union (IOU) of two bounding boxes
-static double calcBBoxIou(cv::Rect2f oBBox1, cv::Rect2f oBBox2)
+static double calcBBoxIou(cv::Rect2f oBBox0, cv::Rect2f oBBox1)
 {
-	double fIntxnArea, fBBox1Area, fBBox2Area;
+	double fIntxnArea, fBBox0Area, fBBox1Area;
 
 	// determine the (x, y)-coordinates of the intersection rectangle
-	double fTopLftX = std::max(oBBox1.x, oBBox2.x);
-	double fTopLftY = std::max(oBBox1.y, oBBox2.y);
-	double fBtmRgtX = std::min((oBBox1.x + oBBox1.width), (oBBox2.x + oBBox2.width));
-	double fBtmRgtY = std::min((oBBox1.y + oBBox1.height), (oBBox2.y + oBBox2.height));
+	double fTopLftX = std::max(oBBox0.x, oBBox1.x);
+	double fTopLftY = std::max(oBBox0.y, oBBox1.y);
+	double fBtmRgtX = std::min((oBBox0.x + oBBox0width), (oBBox1.x + oBBox1.width));
+	double fBtmRgtY = std::min((oBBox0.y + oBBox0.height), (oBBox1.y + oBBox1.height));
 
 	// compute the area of intersection rectangle
 	if ((fBtmRgtX > fTopLftX) && (fBtmRgtY > fTopLftY))
@@ -76,11 +76,11 @@ static double calcBBoxIou(cv::Rect2f oBBox1, cv::Rect2f oBBox2)
 		return 0.0;
 
 	// compute the area of both bounding boxes
+	fBBox0Area = oBBox0.width * oBBox0.height;
 	fBBox1Area = oBBox1.width * oBBox1.height;
-	fBBox2Area = oBBox2.width * oBBox2.height;
 
 	// compute the intersection over union by taking the intersection area and dividing it by the sum of bbox1 + bbox2 areas - the interesection area
-	return (fIntxnArea / (fBBox1Area + fBBox2Area - fIntxnArea));
+	return (fIntxnArea / (fBBox0Area + fBBox1Area - fIntxnArea));
 }
 
 //! validates bounding box
