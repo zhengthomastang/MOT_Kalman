@@ -65,7 +65,7 @@ static double calcBBoxIou(cv::Rect2f oBBox0, cv::Rect2f oBBox1)
 	// determine the (x, y)-coordinates of the intersection rectangle
 	double fTopLftX = std::max(oBBox0.x, oBBox1.x);
 	double fTopLftY = std::max(oBBox0.y, oBBox1.y);
-	double fBtmRgtX = std::min((oBBox0.x + oBBox0width), (oBBox1.x + oBBox1.width));
+	double fBtmRgtX = std::min((oBBox0.x + oBBox0.width), (oBBox1.x + oBBox1.width));
 	double fBtmRgtY = std::min((oBBox0.y + oBBox0.height), (oBBox1.y + oBBox1.height));
 
 	// compute the area of intersection rectangle
